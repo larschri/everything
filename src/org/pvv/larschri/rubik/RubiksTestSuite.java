@@ -12,10 +12,10 @@ public class RubiksTestSuite {
 	 * Method invoked by junit.
 	 */
 	public static Test suite() {
-        TestSuite suite = new TestSuite();
-        suite.addTestSuite(CompressedCube.CompressedCubeTest.class);
-        suite.addTestSuite(CubesTest.class);
-        suite.addTestSuite(OrientationsTest.class);
-        return suite;
+		TestSuite suite = new TestSuite();
+		suite.addTestSuite(CompressedCube.CompressedCubeTest.class);
+		suite.addTestSuite(CubesTest.class);
+		suite.addTestSuite(OrientationsTest.class);
+		return suite;
 	}
 }

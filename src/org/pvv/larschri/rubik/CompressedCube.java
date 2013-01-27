@@ -28,16 +28,16 @@ import junit.framework.TestCase;
  * Corner rotations:
  * 0, 0, 0, 0, 1, 2, 1, 2, 2, 1, 2, 1,
  * 2, 1, 2, 1, 1, 2, 1, 2, 0, 0, 0, 0
- * 
- * Further work. Compression can be improved.
- * Possible corner positions 40320 8!
- * Possible corner rotations 2187 3^7
- * Possible edge positions 479001600 12!
- * Possible edge rotations 2048 2^11
- * Divide by two since two pieces cannot be swapped. It is however possible to swap two corners by
+ * <p />
+ * Further work. Compression can be improved.<br />
+ * Possible corner positions 40320 8!<br />
+ * Possible corner rotations 2187 3^7<br />
+ * Possible edge positions 479001600 12!<br />
+ * Possible edge rotations 2048 2^11<br />
+ * Divide by two since two pieces cannot be swapped. It is however possible to swap two corners by 
  * also swapping two edges (http://en.wikipedia.org/wiki/Rubik%27s_Cube#Permutations) so they cannot
  * be handled independently.
- * 
+ * <p />
  * This gives 43,252,003,274,489,856,000 different possible permutations. This number is less than
  * 2^66 (and greater than 2^65) so at least nine bytes (eight bytes and two bits) are required
  * to uniquely represent a cube. 
@@ -173,17 +173,18 @@ public class CompressedCube implements ICube {
 	private static class CornerFaceletList extends AbstractList<Integer> {
 		/**
 		 * Three facelets sharing a corner cubelet are considered neighbors. This array lists
-		 * the first neighbor for each corner facelet. This can be used to derive the second neighbor.
-		 *     6  5  5
- *             6  4  4
- *             7  7  4
- * 14 13 13    1  0  0    8 11 11   21 20 20
- * 14 12 12    1  0  3    8  8 10   21 20 23
- * 15 15 12    2  2  3    9  9 10   22 22 23
- *            18 17 17
- *            18 16 16
- *            19 19 16
-
+		 * the first neighbor for each corner facelet. This can be used to derive the second neighbor.\
+		 * <pre>
+		 *             6  5  5
+		 *             6  4  4
+		 *             7  7  4
+		 * 14 13 13    1  0  0    8 11 11   21 20 20
+		 * 14 12 12    1  0  3    8  8 10   21 20 23
+		 * 15 15 12    2  2  3    9  9 10   22 22 23
+		 *            18 17 17
+		 *            18 16 16
+		 *            19 19 16
+		 * </pre>
 		 */
 
 		private final int[] corners;
