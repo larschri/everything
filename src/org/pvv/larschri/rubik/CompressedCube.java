@@ -6,9 +6,6 @@ import java.util.Random;
 
 import junit.framework.TestCase;
 
-import org.pvv.larschri.rubik.CompressedCube.Cubelet.Face;
-
-
 /**
  * Cube that does only store one facelet per cubelet. All facelets can be retrieved
  * from {@link #getCorners()} and {@link #getEdges()}.
@@ -46,18 +43,12 @@ import org.pvv.larschri.rubik.CompressedCube.Cubelet.Face;
  */
 public class CompressedCube implements ICube {
 
-	final Face[] corners = new Face[CORNER_CUBELETS.length];
-	final Face[] edges = new Face[EDGE_CUBELETS.length];
-
-	private static void initArray(List<Integer> src, Face[] destFacelets, Cubelet[] cubelets, Face[] faces) {
-		for (int i = 0; i < destFacelets.length; i++) {
-			destFacelets[i] = faces[src.get(cubelets[i].getFirstFace())];
-		}
-	}
+	final Facelet[] corners;
+	final Facelet[] edges;
 
 	public CompressedCube(ICube cube) {
-		initArray(cube.getCorners(), corners, CORNER_CUBELETS, CORNER_FACELETS);
-		initArray(cube.getEdges(), edges, EDGE_CUBELETS, EDGE_FACELETS);
+		corners = CORNER_FACELETS.fromList(cube.getCorners());
+		edges = EDGE_FACELETS.fromList(cube.getEdges());
 	}
 
 
@@ -65,104 +56,64 @@ public class CompressedCube implements ICube {
 	 * @return list of all corners in the uncompressed cube
 	 */
 	@Override public List<Integer> getCorners() {
-		return CORNER_LOOKUP.createList(corners);
+		return CORNER_FACELETS.toList(corners);
 	}
 
 	/**
 	 * @return list of all edges in the uncompressed cube
 	 */
 	@Override public List<Integer> getEdges() {
-		return EDGE_LOOKUP.createList(edges);
+		return EDGE_FACELETS.toList(edges);
 	}
 
-	/**
-	 * New approach. More straight forward than CORNER_NEIGHBORS since we would
-	 * like to handle cubelet and orientation separately when storing the
-	 * compressed cube.
-	 * <p>
-	 * We create a {@link Cubelet} object for each orientation of the ehrm ...
-	 * cubelets. So even though there are 8 corner cubelets in a rubiks cube, we
-	 * will create 24 {@link Cubelet} objects; one for each orientation (or
-	 * facelet if you like). The three {@link Cubelet} objects that represents
-	 * the same cubelet will share the same id, but will have different
-	 * orientations.
-	 * <p>
-	 * There will also be 24 {@link Cubelet} instances for the 12 edge cubelets
-	 * in a rubiks cube, that works correspondingly.
-	 */
-	static class Cubelet {
-		private final Face[] faces;
-		@SuppressWarnings("unused")
-		private final int id;
+	/** Creates a copy of the given array with the elements shifted and rotated by n. */
+	private static int[] shiftRotate(int n, int ... arr) {
+		int[] result = new int[arr.length];
+		for (Integer i : RubikUtil.range(arr.length))
+			result[i] = arr[(i + n) % arr.length];
+		return result;
+	}
 
-		private Cubelet(int id, int[] faces) {
-			this.faces = new Face[faces.length];
-			for (Integer i : RubikUtil.range(faces.length))
-				this.faces[i] = new Face(i, faces[i]);
-			this.id = id;
+	/** Represents one facelet, which knows its cubelet, orientation and neighbor facelets. */
+	private static class Facelet {
+		private final int orientation, cubelet;
+		private final int[] twists;
+		private Facelet(int orientation, int cubelet, int[] facelets) {
+			this.orientation = orientation;
+			this.cubelet = cubelet;
+			this.twists = shiftRotate(orientation, facelets);
 		}
+	}
+
+
+	/** Utility class for mapping between stored {@link Facelet}s and all {@link Facelet}s. */
+	private static class Facelets {
+		private final int[][] cubelets;
+		private final Facelet[] facelets = new Facelet[24];
 
 		/**
-		 * @return the first face on this cubelet.
+		 * Constructor
+		 * @param cubelets array containing all cubelets, each represented by an array of facelets.
 		 */
-		public int getFirstFace() {
-			return faces[0].getFace();
+		Facelets(int[][] cubelets) {
+			this.cubelets = cubelets;
+			for (Integer c : RubikUtil.range(cubelets.length))
+				for (Integer r : RubikUtil.range(cubelets[c].length))
+					facelets[cubelets[c][r]] = new Facelet(r, c, cubelets[c]);
 		}
 
-		public Face getFace(int i) {
-			return faces[i];
-		}
-
-		public int getId() { return getId(); }
-
-		class Face {
-			private final int orientation, face;
-			private Face(int orientation, int face) {
-				this.orientation = orientation;
-				this.face = face;
-			}
-			public Face getFace(int offset) {
-				return faces[(this.orientation + offset) % faces.length];
-			}
-			public int getOrientation() { return orientation; }
-			public int getFace() { return face; }
-			public Cubelet getCubelet() { return Cubelet.this; }
-		}
-
-		private static Cubelet[] createCubelets(int[][] array) {
-			Cubelet[] result = new Cubelet[array.length];
-			for (Integer i : RubikUtil.range(array.length))
-				result[i] = new Cubelet(i, array[i]);
+		Facelet[] fromList(List<Integer> list) {
+			Facelet[] result = new Facelet[cubelets.length];
+			for (Integer i : RubikUtil.range(cubelets.length))
+				result[i] = facelets[list.get(cubelets[i][0])];
 			return result;
 		}
 
-		private static Face[] getFacelets(Cubelet[] cubelets) {
-			Face[] result = new Face[24];
-			for (Cubelet cubelet : cubelets)
-				for (Face face : cubelet.faces)
-					result[face.getFace()] = face;
-			return result;
-		}
-	}
-
-	/** Class for looking up all facelets based on the stored facelets. */
-	private static class CubeletLookup {
-		private final int[] cubeletLookup = new int[24];
-		private final int[] rotationLookup = new int[24];
-
-		private CubeletLookup(Cubelet[] cubelets) {
-			for (int c = 0; c < cubelets.length; c++) {
-				for (int r = 0; r < cubelets[c].faces.length; r++) {
-					cubeletLookup[cubelets[c].faces[r].face] = c;
-					rotationLookup[cubelets[c].faces[r].face] = r;
-				}
-			}
-		}
-
-		List<Integer> createList(final Face[] facelets) {
+		List<Integer> toList(final Facelet[] storedFacelets) {
 			return new AbstractList<Integer>() {
 				@Override public Integer get(int i) {
-					return facelets[cubeletLookup[i]].getFace(rotationLookup[i]).face;
+					Facelet face = facelets[i];
+					return storedFacelets[face.cubelet].twists[face.orientation];
 				}
 
 				@Override public int size() {
@@ -172,7 +123,7 @@ public class CompressedCube implements ICube {
 		}
 	}
 
-	private final static Cubelet[] CORNER_CUBELETS = Cubelet.createCubelets(new int[][] {
+	private static final Facelets CORNER_FACELETS =  new Facelets(new int[][] {
 			{  0,  8,  4},
 			{  1,  7, 13},
 			{  2, 12, 18},
@@ -183,10 +134,8 @@ public class CompressedCube implements ICube {
 			{ 23, 19, 15},
 		});
 
-	private final static Cubelet.Face[] CORNER_FACELETS = Cubelet.getFacelets(CORNER_CUBELETS);
-	private static final CubeletLookup CORNER_LOOKUP =  new CubeletLookup(CORNER_CUBELETS);
 
-	private final static Cubelet[] EDGE_CUBELETS = Cubelet.createCubelets(new int[][] {
+	private static final Facelets EDGE_FACELETS = new Facelets(new int[][] {
 			{  0,  7},
 			{  1, 12},
 			{  2, 17},
@@ -200,10 +149,6 @@ public class CompressedCube implements ICube {
 			{ 22, 19},
 			{ 23, 14},
 		});
-
-	private final static Cubelet.Face[] EDGE_FACELETS = Cubelet.getFacelets(EDGE_CUBELETS);
-
-	private static final CubeletLookup EDGE_LOOKUP = new CubeletLookup(EDGE_CUBELETS);
 
 	/**
 	 * N integers have N! possible permutations. This method converts an array
