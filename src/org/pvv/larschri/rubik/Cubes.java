@@ -54,7 +54,7 @@ public interface Cubes {
 		
 		private Cube turn(int i) {
 			Cube o = Orientations.ORIENTATIONS.get(i);
-			return o.combine(r, o.inverse());			
+			return o.combine(r, o.inverse());
 		}
 
 		List<Cube> turns() {
@@ -62,7 +62,6 @@ public interface Cubes {
 		}
 	}.turns());
 
-	
 
 	/**
 	 * Cube with the front layer turned clockwise.
@@ -153,4 +152,13 @@ public interface Cubes {
 	 * Cube with the back layer turned counterclockwise.
 	 */
 	Cube B3 = B1.inverse();
+
+	/**
+	 * All possible cubes after a single rotation.
+	 */
+	List<Cube> SINGLE_MOVES = Collections.unmodifiableList(Arrays.asList(
+		F1, U1, R1, L1, D1, B1,
+		F2, U2, R2, L2, D2, B2,
+		F3, U3, R3, L3, D3, B3
+	));
 }

@@ -18,14 +18,14 @@ import java.util.List;
  *            19 19 16
  * </pre>
  * 
- * Interface that holds old the orientations of a cube. Note that the center pieces is not
+ * Interface that holds all the orientations of a cube. Note that the center pieces are not
  * a part of the {@link Cube} state, so the orientations should not be used to rotate the cube since
  * the center piece will not be rotated.
  */
 public interface Orientations {
 
 	/**
-	 * List of 24 orientations of the cube. The i'th cube has the i'th number oriented to position 0.
+	 * List all 24 orientations of the cube. The i'th cube has the i'th number oriented to position 0.
 	 */
 	List<Cube> ORIENTATIONS = Collections.unmodifiableList(new Object() {
 		private final Cube ROT_Z = rot( 1, 2, 3, 0,13,14,15,12, 7, 4, 5, 6,17,18,19,16,11, 8, 9,10,23,20,21,22);

@@ -56,7 +56,7 @@ public class Cube implements ICube {
 	}
 
 	/**
-	 * The cube that must be combined by this to get the solved cube.
+	 * The cube that must be combined by this to produce the solved cube.
 	 */
 	public Cube inverse() {
 		return new Cube(this, true);

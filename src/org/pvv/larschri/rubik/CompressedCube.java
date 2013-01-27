@@ -4,6 +4,8 @@ import java.util.AbstractList;
 import java.util.List;
 import java.util.Random;
 
+import org.pvv.larschri.rubik.CompressedCube.Cubelet.Face;
+
 import junit.framework.TestCase;
 
 
@@ -44,17 +46,18 @@ import junit.framework.TestCase;
  */
 public class CompressedCube implements ICube {
 
-	final int[] corners = new int[CORNER_CUBELETS.length];
-	final int[] edges = new int[EDGE_CUBELETS.length];
+	final Face[] corners = new Face[CORNER_CUBELETS.length];
+	final Face[] edges = new Face[EDGE_CUBELETS.length];
 
-	private static void initArray(List<Integer> src, int[] dest, Cubelet[] cubelets) {
-		for (int i = 0; i < dest.length; i++)
-			dest[i] = src.get(cubelets[i].getFirstFace());
+	private static void initArray(List<Integer> src, Face[] destFacelets, Cubelet[] cubelets, Face[] faces) {
+		for (int i = 0; i < destFacelets.length; i++) {
+			destFacelets[i] = faces[src.get(cubelets[i].getFirstFace())];
+		}
 	}
 
 	public CompressedCube(ICube cube) {
-		initArray(cube.getCorners(), corners, CORNER_CUBELETS);
-		initArray(cube.getEdges(), edges, EDGE_CUBELETS);
+		initArray(cube.getCorners(), corners, CORNER_CUBELETS, CORNER_FACELETS);
+		initArray(cube.getEdges(), edges, EDGE_CUBELETS, EDGE_FACELETS);
 	}
 
 	/**
@@ -103,6 +106,10 @@ public class CompressedCube implements ICube {
 		 */
 		public int getFirstFace() {
 			return faces[0].getFace();
+		}
+
+		public Face getFace(int i) {
+			return faces[i];
 		}
 
 		public int getId() { return getId(); }
@@ -187,37 +194,42 @@ public class CompressedCube implements ICube {
 		 * </pre>
 		 */
 
-		private final int[] corners;
-		CornerFaceletList(int[] corners) { this.corners = corners; }
+		private final Face[] cornerFacelets;
+		CornerFaceletList(Face[] cornerFacelets) { this.cornerFacelets = cornerFacelets; }
 
 		/**
 		 * Find and return the value of the i'th corner facelet in the uncompressed cube.
 		 */
 		@Override public Integer get(int i) {
 			switch(i) {
-			case  4: return CORNER_FACELETS[corners[0]].getFace(2).getFace();
-			case  5: return CORNER_FACELETS[corners[5]].getFace(1).getFace();
-			case  6: return CORNER_FACELETS[corners[4]].getFace(2).getFace();
-			case  7: return CORNER_FACELETS[corners[1]].getFace(1).getFace();
-			case  8: return CORNER_FACELETS[corners[0]].getFace(1).getFace();
-			case  9: return CORNER_FACELETS[corners[3]].getFace(2).getFace();
-			case 10: return CORNER_FACELETS[corners[6]].getFace(1).getFace();
-			case 11: return CORNER_FACELETS[corners[5]].getFace(2).getFace();
-			case 12: return CORNER_FACELETS[corners[2]].getFace(1).getFace();
-			case 13: return CORNER_FACELETS[corners[1]].getFace(2).getFace();
-			case 14: return CORNER_FACELETS[corners[4]].getFace(1).getFace();
-			case 15: return CORNER_FACELETS[corners[7]].getFace(2).getFace();
-			case 16: return CORNER_FACELETS[corners[6]].getFace(2).getFace();
-			case 17: return CORNER_FACELETS[corners[3]].getFace(1).getFace();
-			case 18: return CORNER_FACELETS[corners[2]].getFace(2).getFace();
-			case 19: return CORNER_FACELETS[corners[7]].getFace(1).getFace();
-			case 20: return CORNER_FACELETS[corners[4]].getFace(0).getFace();
-			case 21: return CORNER_FACELETS[corners[5]].getFace(0).getFace();
-			case 22: return CORNER_FACELETS[corners[6]].getFace(0).getFace();
-			case 23: return CORNER_FACELETS[corners[7]].getFace(0).getFace();
-			default: return CORNER_FACELETS[corners[i]].getFace(0).getFace();
+			case  4: return get(0, 2);
+			case  5: return get(5, 1);
+			case  6: return get(4, 2);
+			case  7: return get(1, 1);
+			case  8: return get(0, 1);
+			case  9: return get(3, 2);
+			case 10: return get(6, 1);
+			case 11: return get(5, 2);
+			case 12: return get(2, 1);
+			case 13: return get(1, 2);
+			case 14: return get(4, 1);
+			case 15: return get(7, 2);
+			case 16: return get(6, 2);
+			case 17: return get(3, 1);
+			case 18: return get(2, 2);
+			case 19: return get(7, 1);
+			case 20: return get(4, 0);
+			case 21: return get(5, 0);
+			case 22: return get(6, 0);
+			case 23: return get(7, 0);
+			default: return get(i, 0);
 			}
 		}
+
+		int get(int facelet, int rotation) {
+			return cornerFacelets[facelet].getFace(rotation).face;
+		}
+
 		@Override public int size() { return Cube.SIZE; }
 	}
 
@@ -226,35 +238,39 @@ public class CompressedCube implements ICube {
 	 */
 	private static class EdgeFaceletList extends AbstractList<Integer> {
 
-		private final int[] edges;
-		EdgeFaceletList(int[] edges) { this.edges = edges; }
+		private final Face[] edgeFacelets;
+		EdgeFaceletList(Face[] edgeFacelets) { this.edgeFacelets = edgeFacelets; }
 
 		/**
 		 * Find and return the value of the i'th edge facelet in the uncompressed cube.
 		 */
 		@Override public Integer get(int i) {
 			switch(i) {
-			case  5: return EDGE_FACELETS[edges[ 8]].getFace(1).getFace();
-			case  6: return EDGE_FACELETS[edges[ 5]].getFace(0).getFace();
-			case  7: return EDGE_FACELETS[edges[ 0]].getFace(1).getFace();
-			case  8: return EDGE_FACELETS[edges[ 3]].getFace(1).getFace();
-			case  9: return EDGE_FACELETS[edges[ 6]].getFace(1).getFace();
-			case 10: return EDGE_FACELETS[edges[ 9]].getFace(1).getFace();
-			case 11: return EDGE_FACELETS[edges[ 4]].getFace(1).getFace();
-			case 12: return EDGE_FACELETS[edges[ 1]].getFace(1).getFace();
-			case 13: return EDGE_FACELETS[edges[ 5]].getFace(1).getFace();
-			case 14: return EDGE_FACELETS[edges[11]].getFace(1).getFace();
-			case 15: return EDGE_FACELETS[edges[ 7]].getFace(1).getFace();
-			case 16: return EDGE_FACELETS[edges[ 6]].getFace(0).getFace();
-			case 17: return EDGE_FACELETS[edges[ 2]].getFace(1).getFace();
-			case 18: return EDGE_FACELETS[edges[ 7]].getFace(0).getFace();
-			case 19: return EDGE_FACELETS[edges[10]].getFace(1).getFace();
-			case 20: return EDGE_FACELETS[edges[ 8]].getFace(0).getFace();
-			case 21: return EDGE_FACELETS[edges[ 9]].getFace(0).getFace();
-			case 22: return EDGE_FACELETS[edges[10]].getFace(0).getFace();
-			case 23: return EDGE_FACELETS[edges[11]].getFace(0).getFace();
-			default: return EDGE_FACELETS[edges[ i]].getFace(0).getFace();
+			case  5: return get( 8, 1);
+			case  6: return get( 5, 0);
+			case  7: return get( 0, 1);
+			case  8: return get( 3, 1);
+			case  9: return get( 6, 1);
+			case 10: return get( 9, 1);
+			case 11: return get( 4, 1);
+			case 12: return get( 1, 1);
+			case 13: return get( 5, 1);
+			case 14: return get(11, 1);
+			case 15: return get( 7, 1);
+			case 16: return get( 6, 0);
+			case 17: return get( 2, 1);
+			case 18: return get( 7, 0);
+			case 19: return get(10, 1);
+			case 20: return get( 8, 0);
+			case 21: return get( 9, 0);
+			case 22: return get(10, 0);
+			case 23: return get(11, 0);
+			default: return get( i, 0);
 			}
+		}
+
+		int get(int facelet, int rotation) {
+			return edgeFacelets[facelet].getFace(rotation).face;
 		}
 
 		@Override public int size() { return Cube.SIZE; }
@@ -354,18 +370,12 @@ public class CompressedCube implements ICube {
 					String.valueOf(compressed.getEdges()));
 		}
 
-		private final static Cube[] CUBES = new Cube[] {
-			F1, U1, R1, L1, D1, B1,
-			F2, U2, R2, L2, D2, B2,
-			F3, U3, R3, L3, D3, B3,
-		};
-
 		/**
 		 * Test that compressed cubes are correctly uncompressed.
 		 */
 		public void testCubes() {
 			testCube("SOLVED", SOLVED);
-			for (Cube c : CUBES) {
+			for (Cube c : SINGLE_MOVES) {
 				testCube("unit cube", c);
 			}
 			testCube("checker", SOLVED.combine(F2, U2, R2, L2, D2, B2));
@@ -375,7 +385,7 @@ public class CompressedCube implements ICube {
 			Random rand = new Random(seed);
 			Cube cube = SOLVED;
 			for (int i = 0; i < length; i++) {
-				cube = cube.combine(CUBES[rand.nextInt(CUBES.length)]);
+				cube = cube.combine(SINGLE_MOVES.get(rand.nextInt(SINGLE_MOVES.size())));
 			}
 			testCube("random "+seed+"/"+length, cube);
 		}
