@@ -4,9 +4,9 @@ import java.util.AbstractList;
 import java.util.List;
 import java.util.Random;
 
-import org.pvv.larschri.rubik.CompressedCube.Cubelet.Face;
-
 import junit.framework.TestCase;
+
+import org.pvv.larschri.rubik.CompressedCube.Cubelet.Face;
 
 
 /**
@@ -60,18 +60,19 @@ public class CompressedCube implements ICube {
 		initArray(cube.getEdges(), edges, EDGE_CUBELETS, EDGE_FACELETS);
 	}
 
+
 	/**
 	 * @return list of all corners in the uncompressed cube
 	 */
 	@Override public List<Integer> getCorners() {
-		return new CornerFaceletList(corners);
+		return CORNER_LOOKUP.createList(corners);
 	}
 
 	/**
 	 * @return list of all edges in the uncompressed cube
 	 */
 	@Override public List<Integer> getEdges() {
-		return new EdgeFaceletList(edges);
+		return EDGE_LOOKUP.createList(edges);
 	}
 
 	/**
@@ -144,6 +145,33 @@ public class CompressedCube implements ICube {
 		}
 	}
 
+	/** Class for looking up all facelets based on the stored facelets. */
+	private static class CubeletLookup {
+		private final int[] cubeletLookup = new int[24];
+		private final int[] rotationLookup = new int[24];
+
+		private CubeletLookup(Cubelet[] cubelets) {
+			for (int c = 0; c < cubelets.length; c++) {
+				for (int r = 0; r < cubelets[c].faces.length; r++) {
+					cubeletLookup[cubelets[c].faces[r].face] = c;
+					rotationLookup[cubelets[c].faces[r].face] = r;
+				}
+			}
+		}
+
+		List<Integer> createList(final Face[] facelets) {
+			return new AbstractList<Integer>() {
+				@Override public Integer get(int i) {
+					return facelets[cubeletLookup[i]].getFace(rotationLookup[i]).face;
+				}
+
+				@Override public int size() {
+					return Cube.SIZE;
+				}
+			};
+		}
+	}
+
 	private final static Cubelet[] CORNER_CUBELETS = Cubelet.createCubelets(new int[][] {
 			{  0,  8,  4},
 			{  1,  7, 13},
@@ -156,6 +184,7 @@ public class CompressedCube implements ICube {
 		});
 
 	private final static Cubelet.Face[] CORNER_FACELETS = Cubelet.getFacelets(CORNER_CUBELETS);
+	private static final CubeletLookup CORNER_LOOKUP =  new CubeletLookup(CORNER_CUBELETS);
 
 	private final static Cubelet[] EDGE_CUBELETS = Cubelet.createCubelets(new int[][] {
 			{  0,  7},
@@ -174,108 +203,7 @@ public class CompressedCube implements ICube {
 
 	private final static Cubelet.Face[] EDGE_FACELETS = Cubelet.getFacelets(EDGE_CUBELETS);
 
-	/**
-	 * Provides access to all corners. Takes care of "uncompression".
-	 */
-	private static class CornerFaceletList extends AbstractList<Integer> {
-		/**
-		 * Three facelets sharing a corner cubelet are considered neighbors. This array lists
-		 * the first neighbor for each corner facelet. This can be used to derive the second neighbor.\
-		 * <pre>
-		 *             6  5  5
-		 *             6  4  4
-		 *             7  7  4
-		 * 14 13 13    1  0  0    8 11 11   21 20 20
-		 * 14 12 12    1  0  3    8  8 10   21 20 23
-		 * 15 15 12    2  2  3    9  9 10   22 22 23
-		 *            18 17 17
-		 *            18 16 16
-		 *            19 19 16
-		 * </pre>
-		 */
-
-		private final Face[] cornerFacelets;
-		CornerFaceletList(Face[] cornerFacelets) { this.cornerFacelets = cornerFacelets; }
-
-		/**
-		 * Find and return the value of the i'th corner facelet in the uncompressed cube.
-		 */
-		@Override public Integer get(int i) {
-			switch(i) {
-			case  4: return get(0, 2);
-			case  5: return get(5, 1);
-			case  6: return get(4, 2);
-			case  7: return get(1, 1);
-			case  8: return get(0, 1);
-			case  9: return get(3, 2);
-			case 10: return get(6, 1);
-			case 11: return get(5, 2);
-			case 12: return get(2, 1);
-			case 13: return get(1, 2);
-			case 14: return get(4, 1);
-			case 15: return get(7, 2);
-			case 16: return get(6, 2);
-			case 17: return get(3, 1);
-			case 18: return get(2, 2);
-			case 19: return get(7, 1);
-			case 20: return get(4, 0);
-			case 21: return get(5, 0);
-			case 22: return get(6, 0);
-			case 23: return get(7, 0);
-			default: return get(i, 0);
-			}
-		}
-
-		int get(int facelet, int rotation) {
-			return cornerFacelets[facelet].getFace(rotation).face;
-		}
-
-		@Override public int size() { return Cube.SIZE; }
-	}
-
-	/**
-	 * Provides access to all edges. Takes care of "uncompression".
-	 */
-	private static class EdgeFaceletList extends AbstractList<Integer> {
-
-		private final Face[] edgeFacelets;
-		EdgeFaceletList(Face[] edgeFacelets) { this.edgeFacelets = edgeFacelets; }
-
-		/**
-		 * Find and return the value of the i'th edge facelet in the uncompressed cube.
-		 */
-		@Override public Integer get(int i) {
-			switch(i) {
-			case  5: return get( 8, 1);
-			case  6: return get( 5, 0);
-			case  7: return get( 0, 1);
-			case  8: return get( 3, 1);
-			case  9: return get( 6, 1);
-			case 10: return get( 9, 1);
-			case 11: return get( 4, 1);
-			case 12: return get( 1, 1);
-			case 13: return get( 5, 1);
-			case 14: return get(11, 1);
-			case 15: return get( 7, 1);
-			case 16: return get( 6, 0);
-			case 17: return get( 2, 1);
-			case 18: return get( 7, 0);
-			case 19: return get(10, 1);
-			case 20: return get( 8, 0);
-			case 21: return get( 9, 0);
-			case 22: return get(10, 0);
-			case 23: return get(11, 0);
-			default: return get( i, 0);
-			}
-		}
-
-		int get(int facelet, int rotation) {
-			return edgeFacelets[facelet].getFace(rotation).face;
-		}
-
-		@Override public int size() { return Cube.SIZE; }
-
-	}
+	private static final CubeletLookup EDGE_LOOKUP = new CubeletLookup(EDGE_CUBELETS);
 
 	/**
 	 * N integers have N! possible permutations. This method converts an array
