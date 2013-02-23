@@ -40,32 +40,32 @@ public class ObjectFactory {
      * Create an instance of {@link Game.Inning.Top }
      * 
      */
-    public Game.Inning.Top createGameInningTop() {
-        return new Game.Inning.Top();
+    public Game.Inning.HalfInning createGameInningTop() {
+        return new Game.Inning.HalfInning();
     }
 
     /**
-     * Create an instance of {@link Game.Inning.Bottom.Atbat }
+     * Create an instance of {@link Game.Inning.HalfInning.Atbat }
      * 
      */
-    public Game.Inning.Bottom.Atbat createGameInningBottomAtbat() {
-        return new Game.Inning.Bottom.Atbat();
+    public Game.Inning.HalfInning.Atbat createGameInningBottomAtbat() {
+        return new Game.Inning.HalfInning.Atbat();
     }
 
     /**
      * Create an instance of {@link Game.Inning.Top.Atbat.Pitch }
      * 
      */
-    public Game.Inning.Top.Atbat.Pitch createGameInningTopAtbatPitch() {
-        return new Game.Inning.Top.Atbat.Pitch();
+    public Game.Inning.HalfInning.Atbat.Pitch createGameInningTopAtbatPitch() {
+        return new Game.Inning.HalfInning.Atbat.Pitch();
     }
 
     /**
-     * Create an instance of {@link Game.Inning.Bottom }
+     * Create an instance of {@link Game.Inning.HalfInning }
      * 
      */
-    public Game.Inning.Bottom createGameInningBottom() {
-        return new Game.Inning.Bottom();
+    public Game.Inning.HalfInning createGameInningBottom() {
+        return new Game.Inning.HalfInning();
     }
 
     /**
@@ -77,11 +77,11 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link Game.Inning.Bottom.Atbat.Pitch }
+     * Create an instance of {@link Game.Inning.HalfInning.Atbat.Pitch }
      * 
      */
-    public Game.Inning.Bottom.Atbat.Pitch createGameInningBottomAtbatPitch() {
-        return new Game.Inning.Bottom.Atbat.Pitch();
+    public Game.Inning.HalfInning.Atbat.Pitch createGameInningBottomAtbatPitch() {
+        return new Game.Inning.HalfInning.Atbat.Pitch();
     }
 
     /**
@@ -96,8 +96,8 @@ public class ObjectFactory {
      * Create an instance of {@link Game.Inning.Top.Atbat }
      * 
      */
-    public Game.Inning.Top.Atbat createGameInningTopAtbat() {
-        return new Game.Inning.Top.Atbat();
+    public Game.Inning.HalfInning.Atbat createGameInningTopAtbat() {
+        return new Game.Inning.HalfInning.Atbat();
     }
 
 }
