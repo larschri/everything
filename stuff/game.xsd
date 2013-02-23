@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+   <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"  elementFormDefault="qualified"  attributeFormDefault="unqualified" >
+         <!-- XML Schema Generated from XML Document on Sat Feb 23 2013 11:01:23 GMT-0800 (PST) -->
+         <!-- with XmlGrid.net Free Online Service http://xmlgrid.net -->
+         <xs:element name="game" >
+               <xs:complexType>
+                     <xs:sequence>
+                           <xs:element name="inning"  maxOccurs="unbounded" >
+                                 <xs:complexType>
+                                       <xs:sequence>
+                                             <xs:element name="top" >
+                                                   <xs:complexType>
+                                                         <xs:sequence>
+                                                               <xs:element name="atbat"  maxOccurs="unbounded" >
+                                                                     <xs:complexType>
+                                                                           <xs:sequence>
+                                                                                 <xs:element name="pitch"  maxOccurs="unbounded" >
+                                                                                       <xs:complexType>
+                                                                                             <xs:attribute name="des"  type="xs:string" />
+                                                                                             <xs:attribute name="id"  type="xs:int" />
+                                                                                             <xs:attribute name="type"  type="xs:string" />
+                                                                                             <xs:attribute name="tfs"  type="xs:int" />
+                                                                                             <xs:attribute name="tfs_zulu"  type="xs:dateTime" />
+                                                                                             <xs:attribute name="x"  type="xs:double" />
+                                                                                             <xs:attribute name="y"  type="xs:double" />
+                                                                                             <xs:attribute name="sv_id"  type="xs:string" />
+                                                                                             <xs:attribute name="start_speed"  type="xs:double" />
+                                                                                             <xs:attribute name="end_speed"  type="xs:double" />
+                                                                                             <xs:attribute name="sz_top"  type="xs:double" />
+                                                                                             <xs:attribute name="sz_bot"  type="xs:double" />
+                                                                                             <xs:attribute name="pfx_x"  type="xs:double" />
+                                                                                             <xs:attribute name="pfx_z"  type="xs:double" />
+                                                                                             <xs:attribute name="px"  type="xs:double" />
+                                                                                             <xs:attribute name="pz"  type="xs:double" />
+                                                                                             <xs:attribute name="x0"  type="xs:double" />
+                                                                                             <xs:attribute name="y0"  type="xs:int" />
+                                                                                             <xs:attribute name="z0"  type="xs:double" />
+                                                                                             <xs:attribute name="vx0"  type="xs:double" />
+                                                                                             <xs:attribute name="vy0"  type="xs:double" />
+                                                                                             <xs:attribute name="vz0"  type="xs:double" />
+                                                                                             <xs:attribute name="ax"  type="xs:double" />
+                                                                                             <xs:attribute name="ay"  type="xs:double" />
+                                                                                             <xs:attribute name="az"  type="xs:double" />
+                                                                                             <xs:attribute name="break_y"  type="xs:double" />
+                                                                                             <xs:attribute name="break_angle"  type="xs:double" />
+                                                                                             <xs:attribute name="break_length"  type="xs:double" />
+                                                                                             <xs:attribute name="pitch_type"  type="xs:string" />
+                                                                                             <xs:attribute name="type_confidence"  type="xs:double" />
+                                                                                             <xs:attribute name="zone"  type="xs:int" />
+                                                                                             <xs:attribute name="nasty"  type="xs:int" />
+                                                                                             <xs:attribute name="spin_dir"  type="xs:double" />
+                                                                                             <xs:attribute name="spin_rate"  type="xs:double" />
+                                                                                             <xs:attribute name="cc"  type="xs:string" />
+                                                                                             <xs:attribute name="mt"  type="xs:string" />
+                                                                                       </xs:complexType>
+                                                                                 </xs:element>
+                                                                           </xs:sequence>
+                                                                           <xs:attribute name="num"  type="xs:int" />
+                                                                           <xs:attribute name="b"  type="xs:int" />
+                                                                           <xs:attribute name="s"  type="xs:int" />
+                                                                           <xs:attribute name="o"  type="xs:int" />
+                                                                           <xs:attribute name="start_tfs"  type="xs:int" />
+                                                                           <xs:attribute name="start_tfs_zulu"  type="xs:dateTime" />
+                                                                           <xs:attribute name="batter"  type="xs:int" />
+                                                                           <xs:attribute name="stand"  type="xs:string" />
+                                                                           <xs:attribute name="b_height"  type="xs:string" />
+                                                                           <xs:attribute name="pitcher"  type="xs:int" />
+                                                                           <xs:attribute name="p_throws"  type="xs:string" />
+                                                                           <xs:attribute name="des"  type="xs:string" />
+                                                                           <xs:attribute name="event"  type="xs:string" />
+                                                                     </xs:complexType>
+                                                               </xs:element>
+                                                         </xs:sequence>
+                                                   </xs:complexType>
+                                             </xs:element>
+                                             <xs:element name="bottom" >
+                                                   <xs:complexType>
+                                                         <xs:sequence>
+                                                               <xs:element name="atbat"  maxOccurs="unbounded" >
+                                                                     <xs:complexType>
+                                                                           <xs:sequence>
+                                                                                 <xs:element name="pitch"  maxOccurs="unbounded" >
+                                                                                       <xs:complexType>
+                                                                                             <xs:attribute name="des"  type="xs:string" />
+                                                                                             <xs:attribute name="id"  type="xs:int" />
+                                                                                             <xs:attribute name="type"  type="xs:string" />
+                                                                                             <xs:attribute name="tfs"  type="xs:int" />
+                                                                                             <xs:attribute name="tfs_zulu"  type="xs:dateTime" />
+                                                                                             <xs:attribute name="x"  type="xs:double" />
+                                                                                             <xs:attribute name="y"  type="xs:double" />
+                                                                                             <xs:attribute name="sv_id"  type="xs:string" />
+                                                                                             <xs:attribute name="start_speed"  type="xs:double" />
+                                                                                             <xs:attribute name="end_speed"  type="xs:double" />
+                                                                                             <xs:attribute name="sz_top"  type="xs:int" />
+                                                                                             <xs:attribute name="sz_bot"  type="xs:double" />
+                                                                                             <xs:attribute name="pfx_x"  type="xs:double" />
+                                                                                             <xs:attribute name="pfx_z"  type="xs:double" />
+                                                                                             <xs:attribute name="px"  type="xs:double" />
+                                                                                             <xs:attribute name="pz"  type="xs:double" />
+                                                                                             <xs:attribute name="x0"  type="xs:double" />
+                                                                                             <xs:attribute name="y0"  type="xs:int" />
+                                                                                             <xs:attribute name="z0"  type="xs:double" />
+                                                                                             <xs:attribute name="vx0"  type="xs:double" />
+                                                                                             <xs:attribute name="vy0"  type="xs:double" />
+                                                                                             <xs:attribute name="vz0"  type="xs:double" />
+                                                                                             <xs:attribute name="ax"  type="xs:double" />
+                                                                                             <xs:attribute name="ay"  type="xs:double" />
+                                                                                             <xs:attribute name="az"  type="xs:double" />
+                                                                                             <xs:attribute name="break_y"  type="xs:double" />
+                                                                                             <xs:attribute name="break_angle"  type="xs:int" />
+                                                                                             <xs:attribute name="break_length"  type="xs:double" />
+                                                                                             <xs:attribute name="pitch_type"  type="xs:string" />
+                                                                                             <xs:attribute name="type_confidence"  type="xs:double" />
+                                                                                             <xs:attribute name="zone"  type="xs:int" />
+                                                                                             <xs:attribute name="nasty"  type="xs:int" />
+                                                                                             <xs:attribute name="spin_dir"  type="xs:double" />
+                                                                                             <xs:attribute name="spin_rate"  type="xs:double" />
+                                                                                             <xs:attribute name="cc"  type="xs:string" />
+                                                                                             <xs:attribute name="mt"  type="xs:string" />
+                                                                                       </xs:complexType>
+                                                                                 </xs:element>
+                                                                           </xs:sequence>
+                                                                           <xs:attribute name="num"  type="xs:int" />
+                                                                           <xs:attribute name="b"  type="xs:int" />
+                                                                           <xs:attribute name="s"  type="xs:int" />
+                                                                           <xs:attribute name="o"  type="xs:int" />
+                                                                           <xs:attribute name="start_tfs"  type="xs:int" />
+                                                                           <xs:attribute name="start_tfs_zulu"  type="xs:dateTime" />
+                                                                           <xs:attribute name="batter"  type="xs:int" />
+                                                                           <xs:attribute name="stand"  type="xs:string" />
+                                                                           <xs:attribute name="b_height"  type="xs:string" />
+                                                                           <xs:attribute name="pitcher"  type="xs:int" />
+                                                                           <xs:attribute name="p_throws"  type="xs:string" />
+                                                                           <xs:attribute name="des"  type="xs:string" />
+                                                                           <xs:attribute name="event"  type="xs:string" />
+                                                                     </xs:complexType>
+                                                               </xs:element>
+                                                         </xs:sequence>
+                                                   </xs:complexType>
+                                             </xs:element>
+                                       </xs:sequence>
+                                       <xs:attribute name="num"  type="xs:int" />
+                                       <xs:attribute name="away_team"  type="xs:string" />
+                                       <xs:attribute name="home_team"  type="xs:string" />
+                                       <xs:attribute name="next"  type="xs:string" />
+                                 </xs:complexType>
+                           </xs:element>
+                     </xs:sequence>
+                     <xs:attribute name="atBat"  type="xs:int" />
+                     <xs:attribute name="deck"  type="xs:int" />
+                     <xs:attribute name="hole"  type="xs:int" />
+                     <xs:attribute name="ind"  type="xs:string" />
+               </xs:complexType>
+         </xs:element>
+   </xs:schema>
