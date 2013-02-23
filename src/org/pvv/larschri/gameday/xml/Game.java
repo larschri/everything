@@ -3,13 +3,10 @@ package org.pvv.larschri.gameday.xml;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSchemaType;
-import javax.xml.bind.annotation.XmlType;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 /**
@@ -17,16 +14,14 @@ import javax.xml.datatype.XMLGregorianCalendar;
  * <ul>
  *  <li>Download http://gd2.mlb.com/components/game/mlb/year_2012/month_06/day_13/gid_2012_06_13_houmlb_sfnmlb_1/inning/inning_all.xml</li>
  *  <li>Create xsd on: http://xmlgrid.net/xml2xsd.html</li>
- *  <li>Generate java: using xjc ~/Downloads/game.xsd -p org.pvv.larschri.gameday.xml -d src</li>
- *  <li>Manually make it work, remove verbose and redundant parts and add types that the tools decided to skip.
+ *  <li>Generate java: xjc ~/Downloads/game.xsd -p org.pvv.larschri.gameday.xml -d src</li>
+ *  <li>Manually fix bugs, remove verbose and redundant parts and add types that the tools decided to skip.
  * </ul>
  */
-@XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "", propOrder = { "inning" })
 @XmlRootElement(name = "game")
 public class Game {
 
-	@XmlElement(required = true) protected List<Game.Inning> inning = new ArrayList<>();
+	@XmlElement(required = true) protected List<Inning> inning = new ArrayList<>();
 	@XmlAttribute protected Integer atBat;
 	@XmlAttribute protected Integer deck;
 	@XmlAttribute protected Integer hole;
@@ -43,8 +38,8 @@ public class Game {
 
 		public static class HalfInning {
 
-			@XmlElement(required = true) protected List<Game.Inning.HalfInning.Atbat> atbat = new ArrayList<>();
-			@XmlElement(required = false) protected List<Game.Inning.HalfInning.Action> action = new ArrayList<>();
+			@XmlElement(required = true) protected List<Atbat> atbat = new ArrayList<>();
+			@XmlElement(required = false) protected List<Action> action = new ArrayList<>();
 
 			public static class Action {
 				@XmlAttribute protected Integer b;
@@ -59,8 +54,8 @@ public class Game {
 
 			public static class Atbat {
 
-				@XmlElement(required = true) protected List<Game.Inning.HalfInning.Atbat.Pitch> pitch = new ArrayList<>();
-				@XmlElement(required = false) protected List<Game.Inning.HalfInning.Atbat.Runner> runner = new ArrayList<>();
+				@XmlElement(required = true) protected List<Pitch> pitch = new ArrayList<>();
+				@XmlElement(required = false) protected List<Runner> runner = new ArrayList<>();
 				@XmlAttribute protected Integer num;
 				@XmlAttribute protected Integer b;
 				@XmlAttribute protected Integer s;
