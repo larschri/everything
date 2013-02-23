@@ -1,4 +1,4 @@
-package org.pvv.larschri.rubik;
+	package org.pvv.larschri.rubik;
 
 import java.util.AbstractList;
 import java.util.List;
@@ -29,10 +29,10 @@ import junit.framework.TestCase;
  * 2, 1, 2, 1, 1, 2, 1, 2, 0, 0, 0, 0
  * <p />
  * Further work. Compression can be improved.<br />
- * Possible corner positions 40320 8!<br />
- * Possible corner rotations 2187 3^7<br />
- * Possible edge positions 479001600 12!<br />
- * Possible edge rotations 2048 2^11<br />
+ * Possible corner positions 8! =     40.320<br />
+ * Possible corner rotations 3^7 =     2.187<br />
+ * Possible edge positions 12! = 479.001.600<br />
+ * Possible edge rotations 2^11 =      2.048<br />
  * Divide by two since two pieces cannot be swapped. It is however possible to swap two corners by 
  * also swapping two edges (http://en.wikipedia.org/wiki/Rubik%27s_Cube#Permutations) so they cannot
  * be handled independently.
@@ -50,7 +50,6 @@ public class CompressedCube implements ICube {
 		corners = CORNER_FACELETS.fromList(cube.getCorners());
 		edges = EDGE_FACELETS.fromList(cube.getEdges());
 	}
-
 
 	/**
 	 * @return list of all corners in the uncompressed cube
@@ -102,6 +101,7 @@ public class CompressedCube implements ICube {
 					facelets[cubelets[c][r]] = new Facelet(r, c, cubelets[c]);
 		}
 
+		/** Converts a list of integers to an array containing one {@link Facelet} per cubelet.*/
 		Facelet[] fromList(List<Integer> list) {
 			Facelet[] result = new Facelet[cubelets.length];
 			for (Integer i : RubikUtil.range(cubelets.length))
@@ -109,6 +109,7 @@ public class CompressedCube implements ICube {
 			return result;
 		}
 
+		/** Opposite of {@link #fromList(List)} .*/
 		List<Integer> toList(final Facelet[] storedFacelets) {
 			return new AbstractList<Integer>() {
 				@Override public Integer get(int i) {
