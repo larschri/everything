@@ -16,34 +16,34 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement(name = "games")
 public class Grid {
-	@XmlElement(required = true) protected List<Game> game = new ArrayList<>();
+	@XmlElement(required = true) public List<Game> game = new ArrayList<>();
 
 	public static class Game {
-		@XmlAttribute(name = "game_calendar_event_id") protected String gameGalendarEventId;
-		@XmlAttribute(name = "id") protected String id;
-		@XmlAttribute(name = "game_pk") protected Integer gamePk;
-		@XmlAttribute(name = "group") protected String group;
-		@XmlAttribute(name = "game_type") protected String gameType;
-		@XmlAttribute(name = "event_time") protected String eventTime;
-		@XmlAttribute(name = "venue") protected String venue;
-		@XmlAttribute(name = "venue_id") protected String venueId;
-		@XmlAttribute(name = "status") protected String status;
-		@XmlAttribute(name = "ind") protected String ind;
-		@XmlAttribute(name = "inning") protected String inning;
-		@XmlAttribute(name = "top_inning") protected String topInning;
-		@XmlAttribute(name = "away_code") protected String awayCode;
-		@XmlAttribute(name = "away_file_code") protected String awayFileCode;
-		@XmlAttribute(name = "away_team_id") protected String awayTeamId;
-		@XmlAttribute(name = "away_name_abbrev") protected String awayNameAbbrev;
-		@XmlAttribute(name = "away_team_name") protected String awayTeamName;
-		@XmlAttribute(name = "away_score") protected String awayScore;
-		@XmlAttribute(name = "home_code") protected String homeCode;
-		@XmlAttribute(name = "home_file_code") protected String homeFileCode;
-		@XmlAttribute(name = "home_team_id") protected String homeTeamId;
-		@XmlAttribute(name = "home_name_abbrev") protected String homeNameAbbrev;
-		@XmlAttribute(name = "home_team_name") protected String homeTeamName;
-		@XmlAttribute(name = "home_score") protected String homeScore;
-		@XmlAttribute(name = "gameday_sw") protected String gamedaySw;
-		@XmlAttribute(name = "media_state") protected String mediaState;
+		@XmlAttribute(name = "game_calendar_event_id") public String gameGalendarEventId;
+		@XmlAttribute(name = "id") public String id;
+		@XmlAttribute(name = "game_pk") public Integer gamePk;
+		@XmlAttribute(name = "group") public String group;
+		@XmlAttribute(name = "game_type") public String gameType;
+		@XmlAttribute(name = "event_time") public String eventTime;
+		@XmlAttribute(name = "venue") public String venue;
+		@XmlAttribute(name = "venue_id") public String venueId;
+		@XmlAttribute(name = "status") public String status;
+		@XmlAttribute(name = "ind") public String ind;
+		@XmlAttribute(name = "inning") public String inning;
+		@XmlAttribute(name = "top_inning") public String topInning;
+		@XmlAttribute(name = "away_code") public String awayCode;
+		@XmlAttribute(name = "away_file_code") public String awayFileCode;
+		@XmlAttribute(name = "away_team_id") public String awayTeamId;
+		@XmlAttribute(name = "away_name_abbrev") public String awayNameAbbrev;
+		@XmlAttribute(name = "away_team_name") public String awayTeamName;
+		@XmlAttribute(name = "away_score") public String awayScore;
+		@XmlAttribute(name = "home_code") public String homeCode;
+		@XmlAttribute(name = "home_file_code") public String homeFileCode;
+		@XmlAttribute(name = "home_team_id") public String homeTeamId;
+		@XmlAttribute(name = "home_name_abbrev") public String homeNameAbbrev;
+		@XmlAttribute(name = "home_team_name") public String homeTeamName;
+		@XmlAttribute(name = "home_score") public String homeScore;
+		@XmlAttribute(name = "gameday_sw") public String gamedaySw;
+		@XmlAttribute(name = "media_state") public String mediaState;
 	}
 }

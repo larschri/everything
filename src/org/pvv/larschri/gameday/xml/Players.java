@@ -12,55 +12,55 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement(name = "game")
 public class Players {
-	@XmlElement(required = true) protected List<Team> team = new ArrayList<>();
-	@XmlElement(required = true) protected Umpires umpires;
-	@XmlAttribute protected String venue;
-	@XmlAttribute protected String date;
+	@XmlElement(required = true) public List<Team> team = new ArrayList<>();
+	@XmlElement(required = true) public Umpires umpires;
+	@XmlAttribute public String venue;
+	@XmlAttribute public String date;
 
 	public static class Team {
-		@XmlElement(required = true) protected List<Player> player = new ArrayList<>();
-		@XmlElement(required = true) protected List<Coach> coach = new ArrayList<>();
+		@XmlElement(required = true) public List<Player> player = new ArrayList<>();
+		@XmlElement(required = true) public List<Coach> coach = new ArrayList<>();
 
-		@XmlAttribute protected String type;
-		@XmlAttribute protected String id;
-		@XmlAttribute protected String name;
+		@XmlAttribute public String type;
+		@XmlAttribute public String id;
+		@XmlAttribute public String name;
 
 		public static class Player {
-			@XmlAttribute protected Integer id;
-			@XmlAttribute protected String first;
-			@XmlAttribute protected String last;
-			@XmlAttribute protected Integer num;
-			@XmlAttribute protected String boxname;
-			@XmlAttribute protected String rl;
-			@XmlAttribute protected String position;
-			@XmlAttribute protected String status;
-			@XmlAttribute(name = "team_abbrev") protected String teamAbbrev;
-			@XmlAttribute(name = "parent_team_abbrev") protected String parentTeamAbbrev;
-			@XmlAttribute(name = "parent_team_id") protected Integer parentTeamId;
-			@XmlAttribute protected Double avg;
-			@XmlAttribute protected Integer hr;
-			@XmlAttribute protected Integer rbi;
-			@XmlAttribute protected Integer wins;
-			@XmlAttribute protected Integer losses;
-			@XmlAttribute protected Double era;
+			@XmlAttribute public Integer id;
+			@XmlAttribute public String first;
+			@XmlAttribute public String last;
+			@XmlAttribute public Integer num;
+			@XmlAttribute public String boxname;
+			@XmlAttribute public String rl;
+			@XmlAttribute public String position;
+			@XmlAttribute public String status;
+			@XmlAttribute(name = "team_abbrev") public String teamAbbrev;
+			@XmlAttribute(name = "parent_team_abbrev") public String parentTeamAbbrev;
+			@XmlAttribute(name = "parent_team_id") public Integer parentTeamId;
+			@XmlAttribute public Double avg;
+			@XmlAttribute public Integer hr;
+			@XmlAttribute public Integer rbi;
+			@XmlAttribute public Integer wins;
+			@XmlAttribute public Integer losses;
+			@XmlAttribute public Double era;
 		}
 
 		public static class Coach {
-			@XmlAttribute protected String position;
-			@XmlAttribute protected String first;
-			@XmlAttribute protected String last;
-			@XmlAttribute protected Integer id;
-			@XmlAttribute protected Integer num;
+			@XmlAttribute public String position;
+			@XmlAttribute public String first;
+			@XmlAttribute public String last;
+			@XmlAttribute public Integer id;
+			@XmlAttribute public Integer num;
 		}
 	}
 
 	public static class Umpires {
-		@XmlElement(required = true) protected List<Umpire> umpire = new ArrayList<>();
+		@XmlElement(required = true) public List<Umpire> umpire = new ArrayList<>();
 
 		public static class Umpire {
-			@XmlAttribute protected String position;
-			@XmlAttribute protected String name;
-			@XmlAttribute protected Integer id;
+			@XmlAttribute public String position;
+			@XmlAttribute public String name;
+			@XmlAttribute public Integer id;
 		}
 	}
 }
