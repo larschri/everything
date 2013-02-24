@@ -19,7 +19,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
  * </ul>
  */
 @XmlRootElement(name = "game")
-public class Game {
+public class InningAll {
 
 	@XmlElement(required = true) protected List<Inning> inning = new ArrayList<>();
 	@XmlAttribute protected Integer atBat;
@@ -29,8 +29,8 @@ public class Game {
 
 	public static class Inning {
 
-		@XmlElement(required = true) protected Game.Inning.HalfInning top;
-		@XmlElement(required = true) protected Game.Inning.HalfInning bottom;
+		@XmlElement(required = true) protected InningAll.Inning.HalfInning top;
+		@XmlElement(required = true) protected InningAll.Inning.HalfInning bottom;
 		@XmlAttribute protected Integer num;
 		@XmlAttribute(name = "away_team") protected String awayTeam;
 		@XmlAttribute(name = "home_team") protected String homeTeam;
