@@ -34,8 +34,26 @@ public class PitchStats {
 		}
 	};
 
+	/**
+	 * Found at http://pitchfx.texasleaguers.com/league-averages.php. Not sure
+	 * if all of these are in actual use or if any is missing.
+	 */
 	enum PitchType {
-		FF, CU, SL, CH, FT
+		FA, // Fastball
+		FF, // 4-seam Fastball
+		FT, // 2-seam Fastball
+		FC, // Cut Fastball
+		FS, // Split-finger Fastball
+		FO, // Forkball
+		SI, // Sinker
+		SL, // Slider
+		CU, // Curveball
+		KC, // Knuckle Curve
+		EP, // Ephuus
+		CH, // Change-up
+		SC, // Screwball
+		KN, // Knuckleball
+		UN, // Unknown
 	}
 
 	public static final PitchStat<PitchType> PITCH_TYPE = new PitchStat<PitchType> () {
@@ -158,7 +176,16 @@ public class PitchStats {
 
 	/** Return all stats */
 	List<PitchStat<?>> getStats() {
-		return Arrays.<PitchStat<?>>asList(START_SPEED, PITCH_TYPE, pitcherEra, batterAvg, pitchCountStats, ballCountStats, strikeCountStats, batOrderStats);
+		return Arrays.<PitchStat<?>>asList(
+				START_SPEED,
+				PITCH_TYPE,
+				TYPE,
+				pitcherEra,
+				batterAvg,
+				pitchCountStats,
+				ballCountStats,
+				strikeCountStats,
+				batOrderStats);
 	}
 
 	private static Map<Integer, Player> playerMap(Collection<Player> players) {
