@@ -8,6 +8,8 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -16,6 +18,7 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
 import org.pvv.larschri.gameday.xml.Grid;
+import org.pvv.larschri.gameday.xml.Grid.Game;
 import org.pvv.larschri.gameday.xml.InningAll;
 import org.pvv.larschri.gameday.xml.Players;
 
@@ -77,12 +80,11 @@ public class Downloader {
 		if (!matcher.matches())
 			throw new IllegalArgumentException("Could not parse game id: " + game.id);
 
-		String year = matcher.group(1);
-		String month = matcher.group(2);
-		String day = matcher.group(3);
+		int year = Integer.parseInt(matcher.group(1));
+		int month = Integer.parseInt(matcher.group(2));
+		int day = Integer.parseInt(matcher.group(3));
 
-		return resolve(Integer.parseInt(year), Integer.parseInt(month), Integer.parseInt(day))
-				.resolve("gid_" + game.id.replace('/', '_').replace('-', '_'));
+		return resolve(year, month, day).resolve("gid_" + game.id.replace('/', '_').replace('-', '_'));
 	}
 
 	/** retrieve and return {@link Players} */
@@ -103,10 +105,18 @@ public class Downloader {
 	/** Test stuff */
 	public static void main(String[] args) throws NumberFormatException, IOException, JAXBException {
 		Downloader downloader = new Downloader(Paths.get(args[0]), new URL("http://gd2.mlb.com"));
-		Grid grid = downloader.grid(Integer.parseInt(args[1]), Integer.parseInt(args[2]), Integer.parseInt(args[3]));
-		System.err.println(grid.game.get(14).venue);
-		System.err.println(downloader.getURL(Paths.get("/Users/larschri/.gameday/components/game/mlb/year_2013/month_06/day_13/grid.xml")));
-		System.err.println(downloader.players(grid.game.get(14)));
-		System.err.println(downloader.inningAll(grid.game.get(14)));
+		for (GregorianCalendar calendar = new GregorianCalendar(2012, Calendar.JANUARY, 1);
+				calendar.get(Calendar.YEAR) < 2013;
+				calendar.add(Calendar.DATE, 1))
+		{
+			Grid grid = downloader.grid(calendar.get(Calendar.YEAR), 1 + calendar.get(Calendar.MONTH), calendar.get(Calendar.DATE));
+			for (Game game : grid.game) {
+				if (game.venue.equals(("AT&T Park"))) {
+					System.err.println(game.awayTeamName + " " + game.id);
+					downloader.players(game);
+					downloader.inningAll(game);
+				}
+			}
+		}
 	}
 }

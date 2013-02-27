@@ -42,7 +42,7 @@ public class Players {
 			@XmlAttribute public Integer rbi;
 			@XmlAttribute public Integer wins;
 			@XmlAttribute public Integer losses;
-			@XmlAttribute public Double era;
+			@XmlAttribute public String era; // Mostly double, sometimes dash.
 		}
 
 		public static class Coach {
