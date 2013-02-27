@@ -35,6 +35,7 @@ public class Players {
 			@XmlAttribute public String position;
 			@XmlAttribute public String status;
 			@XmlAttribute(name = "team_abbrev") public String teamAbbrev;
+			@XmlAttribute(name = "team_id") public Integer teamId;
 			@XmlAttribute(name = "parent_team_abbrev") public String parentTeamAbbrev;
 			@XmlAttribute(name = "parent_team_id") public Integer parentTeamId;
 			@XmlAttribute public Double avg;

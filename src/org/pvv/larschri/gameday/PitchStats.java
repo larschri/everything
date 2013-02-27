@@ -80,31 +80,57 @@ public class PitchStats {
 		}
 	};
 
-	PitchStat<Player> batter = new PitchStat<Player> () {
-		@Override public Player get(Pitch pitch) {
-			return players.get(atbatStats.get(pitch).batter);
-		}
-	};
+	private class PlayerStat {
+		final PitchStat<Integer> playerId;
 
-	private static Double parse(String s) {
-		try {
-			return Double.valueOf(s);
-		} catch (NumberFormatException e) {
-			return Double.NaN;
+		PlayerStat(PitchStat<Integer> playerId) {
+			this.playerId = playerId;
 		}
+
+		PitchStat<Player> player = new PitchStat<Player> () {
+			@Override public Player get(Pitch pitch) {
+				return players.get(playerId.get(pitch));
+			}
+		};
+
+		PitchStat<Integer> teamId = new PitchStat<Integer> () {
+			@Override public Integer get(Pitch pitch) {
+				return player.get(pitch).teamId;
+			}
+		};
+
+		private Double parse(String s) {
+			try {
+				return Double.valueOf(s);
+			} catch (NumberFormatException e) {
+				return Double.NaN;
+			}
+		}
+
+		PitchStat<Double> era = new PitchStat<Double> () {
+			@Override public Double get(Pitch pitch) {
+				return parse(pitcher.get(pitch).era);
+			}
+		};
+
+		PitchStat<Double> avg = new PitchStat<Double> () {
+			@Override public Double get(Pitch pitch) {
+				return player.get(pitch).avg;
+			}
+		};
 	}
 
-	PitchStat<Double> pitcherEra = new PitchStat<Double> () {
-		@Override public Double get(Pitch pitch) {
-			return parse(pitcher.get(pitch).era);
+	PlayerStat batterStat = new PlayerStat(new PitchStat<Integer> () {
+		@Override public Integer get(Pitch pitch) {
+			return atbatStats.get(pitch).batter;
 		}
-	};
+	});
 
-	PitchStat<Double> batterAvg = new PitchStat<Double> () {
-		@Override public Double get(Pitch pitch) {
-			return batter.get(pitch).avg;
+	PlayerStat pitcherStat = new PlayerStat(new PitchStat<Integer> () {
+		@Override public Integer get(Pitch pitch) {
+			return atbatStats.get(pitch).pitcher;
 		}
-	};
+	});
 
 	/**
 	 * {@link PitchStat} for stuff that depends on more than a single
@@ -180,8 +206,10 @@ public class PitchStats {
 				START_SPEED,
 				PITCH_TYPE,
 				TYPE,
-				pitcherEra,
-				batterAvg,
+				pitcherStat.era,
+				batterStat.avg,
+				pitcherStat.teamId,
+				batterStat.teamId,
 				pitchCountStats,
 				ballCountStats,
 				strikeCountStats,
@@ -213,6 +241,6 @@ public class PitchStats {
 		playerList.addAll(players.team.get(1).player);
 
 		PitchStats pitchStats = new PitchStats(topInnings, playerMap(playerList));
-		System.err.println(pitchStats.getAll(pitchStats.batterAvg));
+		System.err.println(pitchStats.getAll(pitchStats.batterStat.avg));
 	}
 }
