@@ -12,7 +12,7 @@ import java.util.Map;
 
 import javax.xml.bind.JAXBException;
 
-import org.pvv.larschri.gameday.xml.Grid;
+import org.pvv.larschri.gameday.xml.Grid.Game;
 import org.pvv.larschri.gameday.xml.InningAll;
 import org.pvv.larschri.gameday.xml.InningAll.Inning;
 import org.pvv.larschri.gameday.xml.InningAll.Inning.HalfInning;
@@ -216,18 +216,23 @@ public class PitchStats {
 				batOrderStats);
 	}
 
-	private static Map<Integer, Player> playerMap(Collection<Player> players) {
+	/** Helper method to organize xml data */
+	private static Map<Integer, Player> toPlayerMap(Collection<Player> players) {
 		Map<Integer, Player> playerMap = new HashMap<>();
 		for (Player player : players)
 			playerMap.put(player.id, player);
 		return playerMap;
 	}
 
-	/** Test stuff */
-	public static void main(String[] args) throws NumberFormatException, IOException, JAXBException {
-		Downloader downloader = new Downloader(Paths.get(args[0]), new URL("http://gd2.mlb.com"));
-		Grid grid = downloader.grid(2012, 6, 13);
-		InningAll inningAll = downloader.inningAll(grid.game.get(14));
+	/** Helper method to organize xml data */
+	private static Map<Integer, Player> toPlayerMap(Players players) {
+		List<Player> playerList = new ArrayList<>(players.team.get(0).player);
+		playerList.addAll(players.team.get(1).player);
+		return toPlayerMap(playerList);
+	}
+
+	/** Helper method to organize xml data */
+	private static List<List<HalfInning>> toTopsAndBottoms(InningAll inningAll) {
 		List<HalfInning> topInnings = new ArrayList<>();
 		List<HalfInning> bottomInnings = new ArrayList<>();
 		for (Inning inning : inningAll.inning) {
@@ -235,12 +240,16 @@ public class PitchStats {
 			if (inning.bottom != null)
 				bottomInnings.add(inning.bottom);
 		}
+		return Arrays.asList(topInnings, bottomInnings);
+	}
 
-		Players players = downloader.players(grid.game.get(14));
-		List<Player> playerList = new ArrayList<>(players.team.get(0).player);
-		playerList.addAll(players.team.get(1).player);
+	/** Test stuff */
+	public static void main(String[] args) throws NumberFormatException, IOException, JAXBException {
+		Downloader downloader = new Downloader(Paths.get(System.getProperty("user.home") + "/.gameday"), new URL("http://gd2.mlb.com"));
+		Game game = downloader.grid(2012, 6, 13).game.get(14);
 
-		PitchStats pitchStats = new PitchStats(topInnings, playerMap(playerList));
+		List<List<HalfInning>> topsAndBottoms = toTopsAndBottoms(downloader.inningAll(game));
+		PitchStats pitchStats = new PitchStats(topsAndBottoms.get(0), toPlayerMap(downloader.players(game)));
 		System.err.println(pitchStats.getAll(pitchStats.batterStat.avg));
 	}
 }
