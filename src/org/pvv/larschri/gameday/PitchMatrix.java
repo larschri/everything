@@ -21,14 +21,20 @@ import org.pvv.larschri.gameday.xml.InningAll.Inning.HalfInning.Atbat.Pitch;
 import org.pvv.larschri.gameday.xml.Players;
 import org.pvv.larschri.gameday.xml.Players.Team.Player;
 
-/** Class for calculating stats per {@link Pitch} */
-public class PitchStats {
+/**
+ * Class for calculating stats per {@link Pitch}. It can be used to build a
+ * matrix of {@link Pitch}es and {@link PitchColumn}s.
+ */
+public class PitchMatrix {
 
-	interface PitchStat<X> {
+	/**
+	 * Interface used to retrieve a value for a {@link Pitch}.
+	 */
+	interface PitchColumn<X> {
 		X get(Pitch pitch);
 	}
 
-	public static final PitchStat<Double> START_SPEED = new PitchStat<Double> () {
+	public static final PitchColumn<Double> START_SPEED = new PitchColumn<Double> () {
 		@Override public Double get(Pitch pitch) {
 			return pitch.startSpeed;
 		}
@@ -56,7 +62,7 @@ public class PitchStats {
 		UN, // Unknown
 	}
 
-	public static final PitchStat<PitchType> PITCH_TYPE = new PitchStat<PitchType> () {
+	public static final PitchColumn<PitchType> PITCH_TYPE = new PitchColumn<PitchType> () {
 		@Override public PitchType get(Pitch pitch) {
 			return PitchType.valueOf(pitch.pitchType);
 		}
@@ -68,32 +74,32 @@ public class PitchStats {
 		X, // in play
 	}
 
-	public static final PitchStat<Type> TYPE = new PitchStat<Type> () {
+	public static final PitchColumn<Type> TYPE = new PitchColumn<Type> () {
 		@Override public Type get(Pitch pitch) {
 			return Type.valueOf(pitch.type);
 		}
 	};
 
-	PitchStat<Player> pitcher = new PitchStat<Player> () {
+	PitchColumn<Player> pitcher = new PitchColumn<Player> () {
 		@Override public Player get(Pitch pitch) {
 			return players.get(atbatStats.get(pitch).pitcher);
 		}
 	};
 
 	private class PlayerStat {
-		final PitchStat<Integer> playerId;
+		final PitchColumn<Integer> playerId;
 
-		PlayerStat(PitchStat<Integer> playerId) {
+		PlayerStat(PitchColumn<Integer> playerId) {
 			this.playerId = playerId;
 		}
 
-		PitchStat<Player> player = new PitchStat<Player> () {
+		PitchColumn<Player> player = new PitchColumn<Player> () {
 			@Override public Player get(Pitch pitch) {
 				return players.get(playerId.get(pitch));
 			}
 		};
 
-		PitchStat<Integer> teamId = new PitchStat<Integer> () {
+		PitchColumn<Integer> teamId = new PitchColumn<Integer> () {
 			@Override public Integer get(Pitch pitch) {
 				return player.get(pitch).teamId;
 			}
@@ -107,37 +113,37 @@ public class PitchStats {
 			}
 		}
 
-		PitchStat<Double> era = new PitchStat<Double> () {
+		PitchColumn<Double> era = new PitchColumn<Double> () {
 			@Override public Double get(Pitch pitch) {
 				return parse(pitcher.get(pitch).era);
 			}
 		};
 
-		PitchStat<Double> avg = new PitchStat<Double> () {
+		PitchColumn<Double> avg = new PitchColumn<Double> () {
 			@Override public Double get(Pitch pitch) {
 				return player.get(pitch).avg;
 			}
 		};
 	}
 
-	PlayerStat batterStat = new PlayerStat(new PitchStat<Integer> () {
+	PlayerStat batterStat = new PlayerStat(new PitchColumn<Integer> () {
 		@Override public Integer get(Pitch pitch) {
 			return atbatStats.get(pitch).batter;
 		}
 	});
 
-	PlayerStat pitcherStat = new PlayerStat(new PitchStat<Integer> () {
+	PlayerStat pitcherStat = new PlayerStat(new PitchColumn<Integer> () {
 		@Override public Integer get(Pitch pitch) {
 			return atbatStats.get(pitch).pitcher;
 		}
 	});
 
 	/**
-	 * {@link PitchStat} for stuff that depends on more than a single
-	 * {@link Pitch}, so the stats are stored in a map. Other {@link PitchStat}
+	 * {@link PitchColumn} for stuff that depends on more than a single
+	 * {@link Pitch}, so the stats are stored in a map. Other {@link PitchColumn}
 	 * can depend on a {@link MapStat}.
 	 */
-	static class MapStat<X> implements PitchStat<X> {
+	static class MapStat<X> implements PitchColumn<X> {
 		private final Map<Pitch, X> map = new HashMap<>();
 
 		@Override public X get(Pitch pitch) {
@@ -155,7 +161,7 @@ public class PitchStats {
 	private final Map<Integer, Player> players;
 
 	/** @param halfInningList {@link List} containing all of either {@link Inning#top} or {@link Inning#bottom} from a full {@link Game}. */
-	public PitchStats(List<HalfInning> halfInningList, Map<Integer, Player> players) {
+	public PitchMatrix(List<HalfInning> halfInningList, Map<Integer, Player> players) {
 		this.players = players;
 		int pitchCount = 0;
 		int pitcher = -1;
@@ -192,8 +198,8 @@ public class PitchStats {
 		}
 	}
 
-	/** @return all values for the given {@link PitchStat} */
-	<X> List<X> getAll(PitchStat<X> stat) {
+	/** @return all values for the given {@link PitchColumn} */
+	<X> List<X> getAll(PitchColumn<X> stat) {
 		List<X> list = new ArrayList<>();
 		for (Pitch p : pitches)
 			list.add(stat.get(p));
@@ -201,8 +207,8 @@ public class PitchStats {
 	}
 
 	/** Return all stats */
-	List<PitchStat<?>> getStats() {
-		return Arrays.<PitchStat<?>>asList(
+	List<PitchColumn<?>> getStats() {
+		return Arrays.<PitchColumn<?>>asList(
 				START_SPEED,
 				PITCH_TYPE,
 				TYPE,
@@ -249,7 +255,7 @@ public class PitchStats {
 		Game game = downloader.grid(2012, 6, 13).game.get(14);
 
 		List<List<HalfInning>> topsAndBottoms = toTopsAndBottoms(downloader.inningAll(game));
-		PitchStats pitchStats = new PitchStats(topsAndBottoms.get(0), toPlayerMap(downloader.players(game)));
+		PitchMatrix pitchStats = new PitchMatrix(topsAndBottoms.get(0), toPlayerMap(downloader.players(game)));
 		System.err.println(pitchStats.getAll(pitchStats.batterStat.avg));
 	}
 }
