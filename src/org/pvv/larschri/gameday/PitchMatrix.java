@@ -6,6 +6,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -80,24 +81,13 @@ public class PitchMatrix {
 		}
 	};
 
-	PitchColumn<Player> pitcher = new PitchColumn<Player> () {
-		@Override public Player get(Pitch pitch) {
-			return players.get(atbatStats.get(pitch).pitcher);
-		}
-	};
 
 	private class PlayerStat {
-		final PitchColumn<Integer> playerId;
+		final PitchColumn<Player> player;
 
-		PlayerStat(PitchColumn<Integer> playerId) {
-			this.playerId = playerId;
+		PlayerStat(PitchColumn<Player> player) {
+			this.player = player;
 		}
-
-		PitchColumn<Player> player = new PitchColumn<Player> () {
-			@Override public Player get(Pitch pitch) {
-				return players.get(playerId.get(pitch));
-			}
-		};
 
 		PitchColumn<Integer> teamId = new PitchColumn<Integer> () {
 			@Override public Integer get(Pitch pitch) {
@@ -115,36 +105,27 @@ public class PitchMatrix {
 
 		PitchColumn<Double> era = new PitchColumn<Double> () {
 			@Override public Double get(Pitch pitch) {
-				return parse(pitcher.get(pitch).era);
+				return parse(pitcherStats.get(pitch).era);
 			}
 		};
 
 		PitchColumn<Double> avg = new PitchColumn<Double> () {
 			@Override public Double get(Pitch pitch) {
-				return player.get(pitch).avg;
+				return batterStats.get(pitch).avg;
 			}
 		};
 	}
 
-	PlayerStat batterStat = new PlayerStat(new PitchColumn<Integer> () {
-		@Override public Integer get(Pitch pitch) {
-			return atbatStats.get(pitch).batter;
-		}
-	});
-
-	PlayerStat pitcherStat = new PlayerStat(new PitchColumn<Integer> () {
-		@Override public Integer get(Pitch pitch) {
-			return atbatStats.get(pitch).pitcher;
-		}
-	});
+	private final List<Map<Pitch, ?>> allMaps = new ArrayList<>();
 
 	/**
 	 * {@link PitchColumn} for stuff that depends on more than a single
 	 * {@link Pitch}, so the stats are stored in a map. Other {@link PitchColumn}
 	 * can depend on a {@link MapStat}.
 	 */
-	static class MapStat<X> implements PitchColumn<X> {
+	class MapStat<X> implements PitchColumn<X> {
 		private final Map<Pitch, X> map = new HashMap<>();
+		{ allMaps.add(map); }
 
 		@Override public X get(Pitch pitch) {
 			return map.get(pitch);
@@ -157,12 +138,22 @@ public class PitchMatrix {
 	private final MapStat<Integer> ballCountStats = new MapStat<>();
 	private final MapStat<Integer> batOrderStats = new MapStat<>();
 	private final MapStat<Integer> strikeCountStats = new MapStat<>();
+	private final MapStat<Player> batterStats = new MapStat<>();
+	private final MapStat<Player> pitcherStats = new MapStat<>();
+	private final PlayerStat batterStat = new PlayerStat(batterStats);
+	private final PlayerStat pitcherStat = new PlayerStat(pitcherStats);
+
 	private final List<Pitch> pitches = new ArrayList<>();
-	private final Map<Integer, Player> players;
+
+	public void load(Game game, Downloader downloader) throws IOException, JAXBException {
+		List<List<HalfInning>> topsAndBottoms = toTopsAndBottoms(downloader.inningAll(game));
+		Map<Integer, Player> players = toPlayerMap(downloader.players(game));
+		load(topsAndBottoms.get(0), players);
+		load(topsAndBottoms.get(1), players);
+	}
 
 	/** @param halfInningList {@link List} containing all of either {@link Inning#top} or {@link Inning#bottom} from a full {@link Game}. */
-	public PitchMatrix(List<HalfInning> halfInningList, Map<Integer, Player> players) {
-		this.players = players;
+	private void load(List<HalfInning> halfInningList, Map<Integer, Player> players) {
 		int pitchCount = 0;
 		int pitcher = -1;
 		int batCount = 0;
@@ -179,6 +170,8 @@ public class PitchMatrix {
 					halfInningStats.map.put(pitch, halfInning);
 					pitchCountStats.map.put(pitch, pitchCount);
 					batOrderStats.map.put(pitch, batCount % 9);
+					batterStats.map.put(pitch, players.get(atbat.batter));
+					pitcherStats.map.put(pitch, players.get(atbat.pitcher));
 				}
 
 				int ballCount = 0, strikeCount = 0;
@@ -206,20 +199,21 @@ public class PitchMatrix {
 		return list;
 	}
 
-	/** Return all stats */
-	List<PitchColumn<?>> getStats() {
-		return Arrays.<PitchColumn<?>>asList(
-				START_SPEED,
-				PITCH_TYPE,
-				TYPE,
-				pitcherStat.era,
-				batterStat.avg,
-				pitcherStat.teamId,
-				batterStat.teamId,
-				pitchCountStats,
-				ballCountStats,
-				strikeCountStats,
-				batOrderStats);
+	public PitchColumn<Double> getPitcherERA() { return pitcherStat.era; }
+	public PitchColumn<Double> getBatterAVG() { return batterStat.avg; }
+	public PitchColumn<Integer> getPitcherTeam() { return pitcherStat.teamId; }
+	public PitchColumn<Integer> getBatterTeam() { return batterStat.teamId; }
+	public PitchColumn<Double> getPitchSpeed() { return START_SPEED; }
+	public PitchColumn<PitchType> getPitchType() { return PITCH_TYPE; }
+	public PitchColumn<Type> getType() { return TYPE; }
+	public PitchColumn<Integer> getPitcherPitchCount() { return pitchCountStats; }
+	public PitchColumn<Integer> getBallScore() { return ballCountStats; }
+	public PitchColumn<Integer> getStrikeScore() { return strikeCountStats; }
+	public PitchColumn<Player> getBatter() { return batterStats; }
+	public PitchColumn<Player> getPitcher() { return pitcherStats; }
+
+	public List<Pitch> getPitches() {
+		return Collections.unmodifiableList(pitches);
 	}
 
 	/** Helper method to organize xml data */
@@ -231,14 +225,14 @@ public class PitchMatrix {
 	}
 
 	/** Helper method to organize xml data */
-	private static Map<Integer, Player> toPlayerMap(Players players) {
+	public static Map<Integer, Player> toPlayerMap(Players players) {
 		List<Player> playerList = new ArrayList<>(players.team.get(0).player);
 		playerList.addAll(players.team.get(1).player);
 		return toPlayerMap(playerList);
 	}
 
 	/** Helper method to organize xml data */
-	private static List<List<HalfInning>> toTopsAndBottoms(InningAll inningAll) {
+	public static List<List<HalfInning>> toTopsAndBottoms(InningAll inningAll) {
 		List<HalfInning> topInnings = new ArrayList<>();
 		List<HalfInning> bottomInnings = new ArrayList<>();
 		for (Inning inning : inningAll.inning) {
@@ -252,10 +246,16 @@ public class PitchMatrix {
 	/** Test stuff */
 	public static void main(String[] args) throws NumberFormatException, IOException, JAXBException {
 		Downloader downloader = new Downloader(Paths.get(System.getProperty("user.home") + "/.gameday"), new URL("http://gd2.mlb.com"));
-		Game game = downloader.grid(2012, 6, 13).game.get(14);
+		PitchMatrix pitchStats = new PitchMatrix();
+		//Game game = downloader.grid(2012, 6, 13).game.get(14);
+		for (int i = 1; i <= 30; i++) {
+			for (Game game : downloader.grid(2012, 6, i).game) {
+				pitchStats.load(game, downloader);
+			}
+		}
+		System.err.println(pitchStats.getPitches().size());
 
-		List<List<HalfInning>> topsAndBottoms = toTopsAndBottoms(downloader.inningAll(game));
-		PitchMatrix pitchStats = new PitchMatrix(topsAndBottoms.get(0), toPlayerMap(downloader.players(game)));
+		//pitchStats.load(topsAndBottoms.get(0), toPlayerMap(downloader.players(game)));
 		System.err.println(pitchStats.getAll(pitchStats.batterStat.avg));
 	}
 }

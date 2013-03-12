@@ -106,15 +106,15 @@ public class InningAll {
 					@XmlAttribute public Double ax;
 					@XmlAttribute public Double ay;
 					@XmlAttribute public Double az;
-					@XmlAttribute(name = "break_y") public Double breakY;
-					@XmlAttribute(name = "break_angle") public Double breakAngle;
-					@XmlAttribute(name = "break_length") public Double breakLength;
+					@XmlAttribute(name = "break_y") public String breakY;
+					@XmlAttribute(name = "break_angle") public String breakAngle;
+					@XmlAttribute(name = "break_length") public String breakLength;
 					@XmlAttribute(name = "pitch_type") public String pitchType;
 					@XmlAttribute(name = "type_confidence") public Double typeConfidence;
 					@XmlAttribute public Integer zone;
 					@XmlAttribute public Integer nasty;
 					@XmlAttribute(name = "spin_dir") public Double spinDir;
-					@XmlAttribute(name = "spin_rate") public Double spinRate;
+					@XmlAttribute(name = "spin_rate") public String spinRate;
 					@XmlAttribute public String cc;
 					@XmlAttribute public String mt;
 				}

@@ -69,8 +69,12 @@ public class Downloader {
 
 		JAXBContext ctx = JAXBContext.newInstance(new Class[] {clazz});
 		Unmarshaller um = ctx.createUnmarshaller();
-		@SuppressWarnings("unchecked") X x = (X) um.unmarshal(path.toFile());
-		return x;
+		try {
+			@SuppressWarnings("unchecked") X x = (X) um.unmarshal(path.toFile());
+			return x;
+		} catch (Throwable t) {
+			throw new RuntimeException("Failed to parse " + path, t);
+		}
 	}
 
 	private static final Pattern GRID_GAME_ID_PATTERN = Pattern.compile("(\\d{4})/(\\d{2})/(\\d{2})/(.*)");
