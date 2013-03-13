@@ -54,6 +54,7 @@ public class Downloader {
 
 	private void download(Path path) throws IOException {
 		URL src = getURL(path);
+		System.err.println("Downloading: " + src);
 		path.getParent().toFile().mkdirs();
 		try (
 				ReadableByteChannel rbc = Channels.newChannel(src.openStream());
@@ -106,6 +107,11 @@ public class Downloader {
 		return get(Grid.class, resolve(year, month, day).resolve("grid.xml"));
 	}
 
+	/** retrieve and return {@link Grid} for the given date */
+	public Grid grid(Calendar calendar) throws IOException, JAXBException {
+		return grid(calendar.get(Calendar.YEAR), 1 + calendar.get(Calendar.MONTH), calendar.get(Calendar.DATE));
+	}
+
 	/** Test stuff */
 	public static void main(String[] args) throws NumberFormatException, IOException, JAXBException {
 		Downloader downloader = new Downloader(Paths.get(args[0]), new URL("http://gd2.mlb.com"));
@@ -113,7 +119,7 @@ public class Downloader {
 				calendar.get(Calendar.YEAR) < 2013;
 				calendar.add(Calendar.DATE, 1))
 		{
-			Grid grid = downloader.grid(calendar.get(Calendar.YEAR), 1 + calendar.get(Calendar.MONTH), calendar.get(Calendar.DATE));
+			Grid grid = downloader.grid(calendar);
 			for (Game game : grid.game) {
 				if (game.venue.equals(("AT&T Park"))) {
 					System.err.println(game.awayTeamName + " " + game.id);

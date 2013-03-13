@@ -5,14 +5,17 @@ import java.net.URL;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.xml.bind.JAXBException;
 
+import org.pvv.larschri.gameday.xml.Grid;
 import org.pvv.larschri.gameday.xml.Grid.Game;
 import org.pvv.larschri.gameday.xml.InningAll;
 import org.pvv.larschri.gameday.xml.InningAll.Inning;
@@ -243,19 +246,22 @@ public class PitchMatrix {
 		return Arrays.asList(topInnings, bottomInnings);
 	}
 
-	/** Test stuff */
-	public static void main(String[] args) throws NumberFormatException, IOException, JAXBException {
-		Downloader downloader = new Downloader(Paths.get(System.getProperty("user.home") + "/.gameday"), new URL("http://gd2.mlb.com"));
-		PitchMatrix pitchStats = new PitchMatrix();
-		//Game game = downloader.grid(2012, 6, 13).game.get(14);
-		for (int i = 1; i <= 30; i++) {
-			for (Game game : downloader.grid(2012, 6, i).game) {
-				pitchStats.load(game, downloader);
+	/** Load data for the given interval */
+	public void load(Calendar from, Calendar to, Downloader downloader) throws IOException, JAXBException {
+		for (Calendar c = (Calendar) from.clone(); c.before(to); c.add(Calendar.DAY_OF_MONTH, 1)) {
+			for (Game game : downloader.grid(c).game) {
+				if (!game.mediaState.equals("media_dead"))
+					load(game, downloader);
 			}
 		}
-		System.err.println(pitchStats.getPitches().size());
+	}
 
-		//pitchStats.load(topsAndBottoms.get(0), toPlayerMap(downloader.players(game)));
-		System.err.println(pitchStats.getAll(pitchStats.batterStat.avg));
+	/** Test stuff */
+	public static void main(String[] args) throws NumberFormatException, IOException, JAXBException {
+		Downloader downloader = new Downloader(Paths.get(System.getProperty("user.home") + "/.gameday"), new URL("http://statenisland.yankees.milb.com/gdcross/"));
+		PitchMatrix pitchStats = new PitchMatrix();
+		pitchStats.load(
+				new GregorianCalendar(2012, Calendar.AUGUST, 1),
+				new GregorianCalendar(2012, Calendar.SEPTEMBER, 1), downloader);
 	}
 }
