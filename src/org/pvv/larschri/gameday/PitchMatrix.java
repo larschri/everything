@@ -15,7 +15,6 @@ import java.util.Map;
 
 import javax.xml.bind.JAXBException;
 
-import org.pvv.larschri.gameday.xml.Grid;
 import org.pvv.larschri.gameday.xml.Grid.Game;
 import org.pvv.larschri.gameday.xml.InningAll;
 import org.pvv.larschri.gameday.xml.InningAll.Inning;
@@ -34,8 +33,8 @@ public class PitchMatrix {
 	/**
 	 * Interface used to retrieve a value for a {@link Pitch}.
 	 */
-	interface PitchColumn<X> {
-		X get(Pitch pitch);
+	public interface PitchColumn<X> {
+		public X get(Pitch pitch);
 	}
 
 	public static final PitchColumn<Double> START_SPEED = new PitchColumn<Double> () {
@@ -48,7 +47,7 @@ public class PitchMatrix {
 	 * Found at http://pitchfx.texasleaguers.com/league-averages.php. Not sure
 	 * if all of these are in actual use or if any is missing.
 	 */
-	enum PitchType {
+	public enum PitchType {
 		FA, // Fastball
 		FF, // 4-seam Fastball
 		FT, // 2-seam Fastball
@@ -64,11 +63,14 @@ public class PitchMatrix {
 		SC, // Screwball
 		KN, // Knuckleball
 		UN, // Unknown
+		IN, // ?
+		PO, // ?
+		AB, // ?
 	}
 
 	public static final PitchColumn<PitchType> PITCH_TYPE = new PitchColumn<PitchType> () {
 		@Override public PitchType get(Pitch pitch) {
-			return PitchType.valueOf(pitch.pitchType);
+			return pitch.pitchType == null ? null : PitchType.valueOf(pitch.pitchType);
 		}
 	};
 
@@ -171,7 +173,7 @@ public class PitchMatrix {
 				for (Pitch pitch : atbat.pitch) {
 					atbatStats.map.put(pitch, atbat);
 					halfInningStats.map.put(pitch, halfInning);
-					pitchCountStats.map.put(pitch, pitchCount);
+					pitchCountStats.map.put(pitch, pitchCount++);
 					batOrderStats.map.put(pitch, batCount % 9);
 					batterStats.map.put(pitch, players.get(atbat.batter));
 					pitcherStats.map.put(pitch, players.get(atbat.pitcher));
@@ -209,7 +211,7 @@ public class PitchMatrix {
 	public PitchColumn<Double> getPitchSpeed() { return START_SPEED; }
 	public PitchColumn<PitchType> getPitchType() { return PITCH_TYPE; }
 	public PitchColumn<Type> getType() { return TYPE; }
-	public PitchColumn<Integer> getPitcherPitchCount() { return pitchCountStats; }
+	public PitchColumn<Integer> getPitchCount() { return pitchCountStats; }
 	public PitchColumn<Integer> getBallScore() { return ballCountStats; }
 	public PitchColumn<Integer> getStrikeScore() { return strikeCountStats; }
 	public PitchColumn<Player> getBatter() { return batterStats; }
@@ -258,10 +260,11 @@ public class PitchMatrix {
 
 	/** Test stuff */
 	public static void main(String[] args) throws NumberFormatException, IOException, JAXBException {
-		Downloader downloader = new Downloader(Paths.get(System.getProperty("user.home") + "/.gameday"), new URL("http://statenisland.yankees.milb.com/gdcross/"));
-		PitchMatrix pitchStats = new PitchMatrix();
-		pitchStats.load(
-				new GregorianCalendar(2012, Calendar.AUGUST, 1),
-				new GregorianCalendar(2012, Calendar.SEPTEMBER, 1), downloader);
+		Downloader downloader = new Downloader(Paths.get(System.getProperty("user.home") + "/.gameday"), new URL("http://gd2.mlb.com"));
+		PitchMatrix pitchMatrix = new PitchMatrix();
+		pitchMatrix.load(
+				new GregorianCalendar(2012, Calendar.OCTOBER, 1),
+				new GregorianCalendar(2012, Calendar.NOVEMBER, 1),
+				downloader);
 	}
 }
