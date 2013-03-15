@@ -21,6 +21,7 @@ import org.pvv.larschri.gameday.xml.InningAll.Inning;
 import org.pvv.larschri.gameday.xml.InningAll.Inning.HalfInning;
 import org.pvv.larschri.gameday.xml.InningAll.Inning.HalfInning.Atbat;
 import org.pvv.larschri.gameday.xml.InningAll.Inning.HalfInning.Atbat.Pitch;
+import org.pvv.larschri.gameday.xml.InningAll.Inning.HalfInning.Atbat.Runner;
 import org.pvv.larschri.gameday.xml.Players;
 import org.pvv.larschri.gameday.xml.Players.Team.Player;
 
@@ -143,6 +144,9 @@ public class PitchMatrix {
 	private final MapStat<Integer> ballCountStats = new MapStat<>();
 	private final MapStat<Integer> batOrderStats = new MapStat<>();
 	private final MapStat<Integer> strikeCountStats = new MapStat<>();
+	private final MapStat<Integer> sluggingStats = new MapStat<>();
+	private final MapStat<Integer> eraStats = new MapStat<>();
+	private final MapStat<Integer> rbiStats = new MapStat<>();
 	private final MapStat<Player> batterStats = new MapStat<>();
 	private final MapStat<Player> pitcherStats = new MapStat<>();
 	private final PlayerStat batterStat = new PlayerStat(batterStats);
@@ -194,6 +198,39 @@ public class PitchMatrix {
 				batCount++;
 			}
 		}
+
+		for (HalfInning halfInning : halfInningList) {
+			for (Atbat atbat : halfInning.atbat) {
+				Runner batterRunner = null;
+				int rbi = 0;
+				int earned = 0;
+				for (Runner runner : atbat.runner) {
+					if (runner.start.equals("")) {
+						batterRunner = runner;
+					}
+					if ("T".equals(runner.rbi)) rbi++;
+					if ("T".equals(runner.earned)) earned++;
+				}
+
+				if (!atbat.pitch.isEmpty()) {
+					Pitch lastPitch = atbat.pitch.get(atbat.pitch.size() - 1);
+					eraStats.map.put(lastPitch, earned);
+					rbiStats.map.put(lastPitch, rbi);
+					if (batterRunner != null && !batterRunner.event.toLowerCase().contains("walk")) {
+						sluggingStats.map.put(lastPitch, getBase(batterRunner.end, 4));
+					} else {
+						sluggingStats.map.put(lastPitch, 0);
+					}
+				}
+			}
+		}
+	}
+
+	private static int getBase(String s, int n) {
+		if (s.equals("1B")) return 1;
+		else if (s.equals("2B")) return 2;
+		else if (s.equals("3B")) return 3;
+		else return n;
 	}
 
 	/** @return all values for the given {@link PitchColumn} */
@@ -263,8 +300,8 @@ public class PitchMatrix {
 		Downloader downloader = new Downloader(Paths.get(System.getProperty("user.home") + "/.gameday"), new URL("http://gd2.mlb.com"));
 		PitchMatrix pitchMatrix = new PitchMatrix();
 		pitchMatrix.load(
+				new GregorianCalendar(2012, Calendar.SEPTEMBER, 1),
 				new GregorianCalendar(2012, Calendar.OCTOBER, 1),
-				new GregorianCalendar(2012, Calendar.NOVEMBER, 1),
 				downloader);
 	}
 }
