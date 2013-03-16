@@ -69,6 +69,11 @@ public class PitchMatrix {
 		AB, // ?
 	}
 
+	public enum Orientation {
+		R,
+		L
+	}
+
 	public static final PitchColumn<PitchType> PITCH_TYPE = new PitchColumn<PitchType> () {
 		@Override public PitchType get(Pitch pitch) {
 			return pitch.pitchType == null ? null : PitchType.valueOf(pitch.pitchType);
@@ -145,8 +150,11 @@ public class PitchMatrix {
 	private final MapStat<Integer> batOrderStats = new MapStat<>();
 	private final MapStat<Integer> strikeCountStats = new MapStat<>();
 	private final MapStat<Integer> sluggingStats = new MapStat<>();
+	private final MapStat<Integer> walkStats = new MapStat<>();
 	private final MapStat<Integer> eraStats = new MapStat<>();
 	private final MapStat<Integer> rbiStats = new MapStat<>();
+	private final MapStat<Orientation> pitcherHandStats = new MapStat<>();
+	private final MapStat<Orientation> batterStandStats = new MapStat<>();
 	private final MapStat<Player> batterStats = new MapStat<>();
 	private final MapStat<Player> pitcherStats = new MapStat<>();
 	private final PlayerStat batterStat = new PlayerStat(batterStats);
@@ -195,6 +203,12 @@ public class PitchMatrix {
 					}
 				}
 
+				Orientation pitcherHand = Orientation.valueOf(atbat.pThrows);
+				Orientation batterStand = Orientation.valueOf(atbat.stand);
+				for (Pitch pitch : atbat.pitch) {
+					pitcherHandStats.map.put(pitch, pitcherHand);
+					batterStandStats.map.put(pitch, batterStand);
+				}
 				batCount++;
 			}
 		}
@@ -216,11 +230,17 @@ public class PitchMatrix {
 					Pitch lastPitch = atbat.pitch.get(atbat.pitch.size() - 1);
 					eraStats.map.put(lastPitch, earned);
 					rbiStats.map.put(lastPitch, rbi);
-					if (batterRunner != null && !batterRunner.event.toLowerCase().contains("walk")) {
-						sluggingStats.map.put(lastPitch, getBase(batterRunner.end, 4));
-					} else {
-						sluggingStats.map.put(lastPitch, 0);
+					int slugging = 0;
+					int walk = 0;
+					if (batterRunner != null) {
+						if (batterRunner.event.toLowerCase().contains("walk")) {
+							walk = 1;
+						} else {
+							slugging = getBase(batterRunner.end, 4);
+						}
 					}
+					sluggingStats.map.put(lastPitch, slugging);
+					walkStats.map.put(lastPitch, walk);
 				}
 			}
 		}
@@ -253,6 +273,12 @@ public class PitchMatrix {
 	public PitchColumn<Integer> getStrikeScore() { return strikeCountStats; }
 	public PitchColumn<Player> getBatter() { return batterStats; }
 	public PitchColumn<Player> getPitcher() { return pitcherStats; }
+	public PitchColumn<Integer> getEarnedRuns() { return eraStats; }
+	public PitchColumn<Integer> getRBI() { return rbiStats; }
+	public PitchColumn<Integer> getSlugging() { return sluggingStats; }
+	public PitchColumn<Integer> getWalk() { return walkStats; }
+	public PitchColumn<Orientation> getPitcherHand(){ return pitcherHandStats; }
+	public PitchColumn<Orientation> getBatterStand() { return batterStandStats; }
 
 	public List<Pitch> getPitches() {
 		return Collections.unmodifiableList(pitches);
