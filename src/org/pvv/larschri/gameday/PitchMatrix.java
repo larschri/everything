@@ -145,14 +145,25 @@ public class PitchMatrix {
 
 	private final MapStat<Atbat> atbatStats = new MapStat<>();
 	private final MapStat<HalfInning> halfInningStats = new MapStat<>();
+	private final MapStat<Integer> inningStats = new MapStat<>();
+	/** The total pitch count for the pitcher. */
 	private final MapStat<Integer> pitchCountStats = new MapStat<>();
+	/** Number of balls in the current count for the at bat. */
 	private final MapStat<Integer> ballCountStats = new MapStat<>();
-	private final MapStat<Integer> batOrderStats = new MapStat<>();
+	/** Number of strikes in the current count for the at bat. */
 	private final MapStat<Integer> strikeCountStats = new MapStat<>();
+	/** The bat order number of the current batter. */
+	private final MapStat<Integer> batOrderStats = new MapStat<>();
+	/** The base reached by the batter. Recorded for the last pitch. */
 	private final MapStat<Integer> sluggingStats = new MapStat<>();
+	/** Recorded as 1 for the last pitch if the at bat ends in a walk */
 	private final MapStat<Integer> walkStats = new MapStat<>();
+	/** Number of earned runs made in an at bat. Recorded for the last pitch. */
 	private final MapStat<Integer> eraStats = new MapStat<>();
+	/** Number of RBIs made in an at bat. Recorded for the last pitch. */
 	private final MapStat<Integer> rbiStats = new MapStat<>();
+	/** Number of outs made in an at bat. Recorded for the last pitch. */
+	private final MapStat<Integer> outStats = new MapStat<>();
 	private final MapStat<Orientation> pitcherHandStats = new MapStat<>();
 	private final MapStat<Orientation> batterStandStats = new MapStat<>();
 	private final MapStat<Player> batterStats = new MapStat<>();
@@ -174,6 +185,7 @@ public class PitchMatrix {
 		int pitchCount = 0;
 		int pitcher = -1;
 		int batCount = 0;
+		int inningCount = 0;
 
 		for (HalfInning halfInning : halfInningList) {
 			for (Atbat atbat : halfInning.atbat) {
@@ -183,6 +195,7 @@ public class PitchMatrix {
 				}
 				pitches.addAll(atbat.pitch);
 				for (Pitch pitch : atbat.pitch) {
+					inningStats.map.put(pitch, inningCount);
 					atbatStats.map.put(pitch, atbat);
 					halfInningStats.map.put(pitch, halfInning);
 					pitchCountStats.map.put(pitch, pitchCount++);
@@ -211,9 +224,11 @@ public class PitchMatrix {
 				}
 				batCount++;
 			}
+			inningCount++;
 		}
 
 		for (HalfInning halfInning : halfInningList) {
+			int outs = 0;
 			for (Atbat atbat : halfInning.atbat) {
 				Runner batterRunner = null;
 				int rbi = 0;
@@ -226,6 +241,7 @@ public class PitchMatrix {
 					if ("T".equals(runner.earned)) earned++;
 				}
 
+				// Populate the last pitch with the atbat stats
 				if (!atbat.pitch.isEmpty()) {
 					Pitch lastPitch = atbat.pitch.get(atbat.pitch.size() - 1);
 					eraStats.map.put(lastPitch, earned);
@@ -241,7 +257,9 @@ public class PitchMatrix {
 					}
 					sluggingStats.map.put(lastPitch, slugging);
 					walkStats.map.put(lastPitch, walk);
+					outStats.map.put(lastPitch, atbat.o - outs);
 				}
+				outs = atbat.o;
 			}
 		}
 	}
@@ -268,15 +286,26 @@ public class PitchMatrix {
 	public PitchColumn<Double> getPitchSpeed() { return START_SPEED; }
 	public PitchColumn<PitchType> getPitchType() { return PITCH_TYPE; }
 	public PitchColumn<Type> getType() { return TYPE; }
+	/** The inning. */
+	public PitchColumn<Integer> getInning() { return inningStats; }
+	/** The total pitch count for the pitcher. */
 	public PitchColumn<Integer> getPitchCount() { return pitchCountStats; }
+	/** Number of balls in the current count for the at bat. */
 	public PitchColumn<Integer> getBallScore() { return ballCountStats; }
+	/** Number of strikes in the current count for the at bat. */
 	public PitchColumn<Integer> getStrikeScore() { return strikeCountStats; }
 	public PitchColumn<Player> getBatter() { return batterStats; }
 	public PitchColumn<Player> getPitcher() { return pitcherStats; }
+	/** Number of earned runs made in an at bat. Recorded for the last pitch. */
 	public PitchColumn<Integer> getEarnedRuns() { return eraStats; }
+	/** Number of RBIs made in an at bat. Recorded for the last pitch. */
 	public PitchColumn<Integer> getRBI() { return rbiStats; }
+	/** The base reached by the batter. Recorded for the last pitch. */
 	public PitchColumn<Integer> getSlugging() { return sluggingStats; }
+	/** Recorded as 1 for the last pitch if the at bat ends in a walk */
 	public PitchColumn<Integer> getWalk() { return walkStats; }
+	/** Number of outs made in an at bat. Recorded for the last pitch. */
+	public PitchColumn<Integer> getOuts() { return outStats; }
 	public PitchColumn<Orientation> getPitcherHand(){ return pitcherHandStats; }
 	public PitchColumn<Orientation> getBatterStand() { return batterStandStats; }
 
