@@ -185,7 +185,7 @@ public class PitchMatrix {
 		int pitchCount = 0;
 		int pitcher = -1;
 		int batCount = 0;
-		int inningCount = 0;
+		int inningCount = 1;
 
 		for (HalfInning halfInning : halfInningList) {
 			for (Atbat atbat : halfInning.atbat) {
