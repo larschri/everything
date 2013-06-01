@@ -122,6 +122,16 @@ public class CompressedCube implements ICube {
 				}
 			};
 		}
+
+		/** In progress */
+		long compress(Facelet[] facelets) {
+			return 0;
+		}
+
+		/** In progress */
+		Facelet[] uncompress(long compressed) {
+			return null;
+		}
 	}
 
 	private static final Facelets CORNER_FACELETS =  new Facelets(new int[][] {
@@ -270,6 +280,18 @@ public class CompressedCube implements ICube {
 		public void testRandomCubes() {
 			for (int i = 0; i < 100; i++) {
 				testRandom(i, 35);
+			}
+		}
+
+		/** In progress */
+		public void testFull() {
+			Cube cube = SOLVED.combine(F2, U2, R2, L2, D2, B2);
+			CompressedCube compressed = new CompressedCube(cube);
+			int[] cornerPermutation = new int[compressed.corners.length];
+			int[] cornerRotation = new int[compressed.corners.length];
+			for (int i = 0; i < compressed.corners.length; i++) {
+				cornerPermutation[i] = compressed.corners[i].cubelet;
+				cornerRotation[i] = compressed.corners[i].orientation;
 			}
 		}
 	}
