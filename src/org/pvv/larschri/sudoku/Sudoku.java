@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import com.google.common.base.Splitter;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
@@ -17,7 +18,7 @@ import com.google.common.primitives.Chars;
 
 public class Sudoku {
 
-	private int recursionDepth = 4; // don't care about larger clusters than this
+	private static final int RECURSION_DEPTH = 4; // don't care about larger clusters than this
 
 	private class Cell {
 		private final Set<Group> cellGroups;
@@ -77,21 +78,32 @@ public class Sudoku {
 			return sb.toString();
 		}
 
-		/** Detect smaller groups of cells that has the same candidate symbols. If a group of
-		 *  n cells has n candidate symbols, then these candidates can be eliminated from 
-		 *  other cells.
-		 */
-		boolean clusterCells(Set<Character> symbols, Set<Cell> cells, List<Cell> more) {
+		List<Entry<Character, Collection<Cell>>> cellsByCandidates() {
+			Multimap<Character, Cell> result = HashMultimap.create();
+			for (Cell cell : groupCells)
+				for (Character c : cell.candidates)
+					result.put(c, cell);
+			return new ArrayList<>(result.asMap().entrySet());
+		}
+	}
+
+	/** Detect smaller groups of cells that has the same candidate symbols. If a group of
+	 *  n cells has n candidate symbols, then these candidates can be eliminated from 
+	 *  other cells.
+	 */
+	private static final Eliminator SYMBOL_ELIMINATOR = new Eliminator() {
+		boolean eliminateSymbols(Group group, Set<Character> symbols, Set<Cell> cells, List<Cell> more) {
 			boolean changed = false;
 			if (symbols.size() == cells.size()) {
-				for (Cell cell : this.groupCells)
+				for (Cell cell : group.groupCells)
 					if (!cells.contains(cell))
 						changed |= cell.eliminateCandidates(symbols);
-			} else if (symbols.size() < recursionDepth) {
+			} else if (symbols.size() < RECURSION_DEPTH) {
 				for (int i = 0; i < more.size(); i++) {
 					Cell c = more.get(i);
 					if (!c.isSolved())
-						changed |= clusterCells(
+						changed |= eliminateSymbols(
+								group,
 								Sets.union(symbols, c.candidates),
 								Sets.union(cells, Collections.singleton(c)),
 								more.subList(i + 1, more.size()));
@@ -101,37 +113,36 @@ public class Sudoku {
 			return changed;
 		}
 
-		boolean clusterCells() {
+		@Override public boolean eliminate(Group group) {
 			boolean changed = false;
+			Cell[] groupCells = group.groupCells;
 			List<Cell> cellList = Arrays.asList(groupCells);
 			for (int i = 0; i < groupCells.length; i++) {
-				changed |= clusterCells(groupCells[i].candidates, Collections.singleton(groupCells[i]), cellList.subList(i+1, groupCells.length));
+				changed |= eliminateSymbols(
+						group,
+						groupCells[i].candidates,
+						Collections.singleton(groupCells[i]),
+						cellList.subList(i+1, groupCells.length));
 			}
 			return changed;
 		}
+	};
 
-		List<Entry<Character, Collection<Cell>>> cellsByCandidates() {
-			Multimap<Character, Cell> result = HashMultimap.create();
-			for (Cell cell : groupCells)
-				for (Character c : cell.candidates)
-					result.put(c, cell);
-			return new ArrayList<>(result.asMap().entrySet());
-		}
-
-		/**
-		 * Detect smaller groups of symbols that are in the same cells. If a group of n symbols
-		 * are in n cells, then remove other candidates from those cells.
-		 */
-		boolean clusterSymbols(Set<Character> symbols, Set<Cell> cells, List<Entry<Character, Collection<Cell>>> more) {
+	/**
+	 * Detect smaller groups of symbols that are in the same cells. If a group of n symbols
+	 * are in n cells, then remove other candidates from those cells.
+	 */
+	private static final Eliminator CELL_ELIMINATOR = new Eliminator() {
+		boolean eliminateCells(Set<Character> symbols, Set<Cell> cells, List<Entry<Character, Collection<Cell>>> more) {
 			boolean changed = false;
 			if (symbols.size() == cells.size()) {
 				for (Cell cell : cells)
 					changed |= cell.retainCandidates(symbols);
-			} else if (cells.size() < recursionDepth) {
+			} else if (cells.size() < RECURSION_DEPTH) {
 				for (int i = 0; i < more.size(); i++) {
 					Entry<Character, Collection<Cell>> first = more.get(0);
 					List<Entry<Character, Collection<Cell>>> rest = more.subList(1, more.size());
-					changed |= clusterSymbols(
+					changed |= eliminateCells(
 							Sets.union(symbols, Collections.singleton(first.getKey())),
 							Sets.union(cells, (Set<Cell>) first.getValue()),
 							rest);
@@ -140,40 +151,42 @@ public class Sudoku {
 			return changed;
 		}
 
-		boolean clusterSymbols() {
+		@Override public boolean eliminate(Group group) {
 			boolean changed = false;
-			List<Entry<Character, Collection<Cell>>> cellList = cellsByCandidates();
+			List<Entry<Character, Collection<Cell>>> cellList = group.cellsByCandidates();
 			for (int i = 0; i < cellList.size(); i++) {
 				Entry<Character, Collection<Cell>> first = cellList.get(i);
-				changed |= clusterSymbols(
+				changed |= eliminateCells(
 						Collections.singleton(first.getKey()),
 						(Set<Cell>) first.getValue(),
 						cellList.subList(i+1, cellList.size()));
 			}
 			return changed;
 		}
+	};
 
-		/** 
-		 * Propagates findings from one group to another when possible.
-		 * Example: if a box fixes a symbol to a row within the box, then remove the
-		 * symbol from the other cells in the row.
-		 */
-		boolean propagateClusters() {
+	/** 
+	 * Propagates findings from one group to another when possible.
+	 * Example: if a box fixes a symbol to a row within the box, then remove the
+	 * symbol from the other cells in the row.
+	 */
+	private static final Eliminator ELIMINTATION_PROPAGATOR = new Eliminator() {
+		@Override public boolean eliminate(Group group) {
 			boolean changed = false;
-			for (Entry<Character, Collection<Cell>> entry : cellsByCandidates()) {
+			for (Entry<Character, Collection<Cell>> entry : group.cellsByCandidates()) {
 				Set<Group> groups = new HashSet<>(entry.getValue().iterator().next().cellGroups);
 				for (Cell cell : entry.getValue())
 					groups.retainAll(cell.cellGroups);
 
-				for (Group group : groups)
-					if (group != this)
+				for (Group g : groups)
+					if (g != group)
 						for (Cell cell : group.groupCells)
 							if (!entry.getValue().contains(cell))
 								changed |= cell.eliminateCandidates(Collections.singleton(entry.getKey()));
 			}
 			return changed;
 		}
-	}
+	};
 
 	private static final int ROW = 0;
 	private static final int COL = 1;
@@ -207,9 +220,12 @@ public class Sudoku {
 	}
 
 	void init(String ... rows) {
-		assert rows.length == symbols.size();
-		for (int i = 0; i < rows.length; i++) {
-			String row = rows[i];
+		init(Arrays.asList(rows));
+	}
+
+	void init(Iterable<String> rows) {
+		int i = 0;
+		for (String row : rows) {
 			assert row.length() == symbols.size();
 			for (int j = 0; j < row.length(); j++) {
 				Character c = row.charAt(j);
@@ -217,6 +233,7 @@ public class Sudoku {
 					groups[ROW][i].groupCells[j].setCandidates(Collections.singleton(c));
 				}
 			}
+			i++;
 		}
 	}
 
@@ -241,30 +258,16 @@ public class Sudoku {
 		return sb.toString();
 	}
 
-	/** See {@link Group#clusterCells()} */
-	boolean clusterCells() {
+	boolean eliminate(Eliminator eliminator) {
 		boolean changed = false;
 		for (Group[] gs : groups)
 			for (Group g : gs)
-				changed |= g.clusterCells();
+				changed |= eliminator.eliminate(g);
 		return changed;
 	}
 
-	/** See {@link Group#clusterSymbols()} */
-	boolean clusterSymbols() {
-		boolean changed = false;
-		for (Group[] gs : groups)
-			for (Group g : gs)
-				changed |= g.clusterSymbols();
-		return changed;
-	}
-
-	boolean propagateClusters() {
-		boolean changed = false;
-		for (Group[] gs : groups)
-			for (Group g : gs)
-				changed |= g.propagateClusters();
-		return changed;
+	interface Eliminator {
+		boolean eliminate(Group group);
 	}
 
 	boolean isDone() {
@@ -286,6 +289,9 @@ public class Sudoku {
 						// Eliminate the guessed symbol since it made the sudoku unsolvable.
 						cell.candidates.remove(symbol);
 						return true;
+					} else {
+						// Found a solution, so we could solve the cell here,
+						// if we don't care to detect duplicate solutions.
 					}
 				}
 			}
@@ -297,7 +303,7 @@ public class Sudoku {
 		while (!isDone()) {
 			// Call these repeatedly to eliminate candidates until 
 			// they don't have any effect.
-			while (clusterCells() || clusterSymbols() || propagateClusters()) {
+			while (eliminate(SYMBOL_ELIMINATOR) || eliminate(CELL_ELIMINATOR) || eliminate(ELIMINTATION_PROPAGATOR)) {
 			}
 
 			if (!isDone() && !guess()) {
@@ -316,16 +322,8 @@ public class Sudoku {
 
 	public static void main(String[] args) {
 		Sudoku sudoku = new Sudoku();
-		sudoku.init(
-				".94...13.",
-				".........",
-				"....76..2",
-				".8..1....",
-				".32......",
-				"...2...6.",
-				"....5.4..",
-				".....8..7",
-				"..63.4..8");
+
+		sudoku.init(Splitter.fixedLength(9).split("38.6.......6.......2..7.41......5....9..1..7....4......48.2..5.......3.......7.92"));
 
 		long start = System.currentTimeMillis();
 		sudoku.solve();
