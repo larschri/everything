@@ -11,6 +11,7 @@ import java.util.Set;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.common.primitives.Chars;
@@ -88,80 +89,83 @@ public class Sudoku {
 	}
 
 	/** Detect smaller groups of cells that has the same candidate symbols. If a group of
-	 *  n cells has n candidate symbols, then these candidates can be eliminated from 
+	 *  n cells has n candidate symbols, then these symbols can be eliminated from 
 	 *  other cells.
 	 */
-	private static final Eliminator SYMBOL_ELIMINATOR = new Eliminator() {
-		boolean eliminateSymbols(Group group, Set<Character> symbols, Set<Cell> cells, List<Cell> more) {
-			boolean changed = false;
-			if (symbols.size() == cells.size()) {
-				for (Cell cell : group.groupCells)
-					if (!cells.contains(cell))
-						changed |= cell.eliminateCandidates(symbols);
-			} else if (symbols.size() < RECURSION_DEPTH) {
-				for (int i = 0; i < more.size(); i++) {
-					Cell c = more.get(i);
-					if (!c.isSolved())
-						changed |= eliminateSymbols(
-								group,
-								Sets.union(symbols, c.candidates),
-								Sets.union(cells, Collections.singleton(c)),
-								more.subList(i + 1, more.size()));
-				}
-			}
+	private static final Eliminator SYMBOL_ELIMINATOR2 = new CliqueEliminator<Cell, Character>() {
 
+		@Override boolean eliminate(List<Entry<Cell, Collection<Character>>> links, Set<Cell> cells, Set<Character> symbols) {
+			boolean changed = false;
+			for (Entry<Cell, Collection<Character>> entry : links)
+				if (!cells.contains(entry.getKey()))
+					changed |= entry.getKey().eliminateCandidates(symbols);
 			return changed;
 		}
 
-		@Override public boolean eliminate(Group group) {
-			boolean changed = false;
-			Cell[] groupCells = group.groupCells;
-			List<Cell> cellList = Arrays.asList(groupCells);
-			for (int i = 0; i < groupCells.length; i++) {
-				changed |= eliminateSymbols(
-						group,
-						groupCells[i].candidates,
-						Collections.singleton(groupCells[i]),
-						cellList.subList(i+1, groupCells.length));
-			}
-			return changed;
+		@Override List<Entry<Cell, Collection<Character>>> getLinks(Group group) {
+			List<Entry<Cell, Collection<Character>>> links = new ArrayList<>();
+			for (Cell cell : group.groupCells)
+				links.add(Maps.<Cell, Collection<Character>>immutableEntry(cell, cell.candidates));
+			return links;
 		}
 	};
+
+	/**
+	 * Find cliques and pass them to {@link #eliminate(List, Set, Set)}. The
+	 * relation between X and Y objects are define by a List<Entry<X,
+	 * Collection<Y>>, and is used to find the cliques. A Clique in this context
+	 * is a Set<X> with a corresponding Set<Y> (union of the Ys) of the same size.
+	 */
+	static abstract class CliqueEliminator<X, Y> implements Eliminator {
+
+		/** Called if a clique is found. */
+		abstract boolean eliminate(List<Entry<X, Collection<Y>>> links, Set<X> xs, Set<Y> ys);
+
+		/** Get the relations between objects used to find sets of same size. */
+		abstract List<Entry<X, Collection<Y>>> getLinks(Group group);
+
+		private boolean recursion(Set<X> xs, Set<Y> ys, List<Entry<X, Collection<Y>>> links, int offset) {
+			Entry<X, Collection<Y>> pair = links.get(offset);
+
+			Set<X> x = Sets.union(xs, Collections.singleton(pair.getKey()));
+			Set<Y> y = Sets.union(ys, (Set<Y>) pair.getValue());
+
+			if (x.size() == y.size()) {
+				return  eliminate(links, x, y);
+			} else if (y.size() > RECURSION_DEPTH) {
+				return recursionLoop(x, y, links, offset + 1);
+			} else {
+				return false;
+			}
+		}
+
+		private boolean recursionLoop(Set<X> x, Set<Y> y, List<Entry<X, Collection<Y>>> links, int offset) {
+			boolean changed = false;
+			for (int i = offset; i < links.size(); i++)
+				changed |= recursion(x, y, links, i);
+			return changed;
+		}
+
+		@Override public final boolean eliminate(Group group) {
+			return recursionLoop(Collections.<X>emptySet(), Collections.<Y>emptySet(), getLinks(group), 0);
+		}
+	}
 
 	/**
 	 * Detect smaller groups of symbols that are in the same cells. If a group of n symbols
 	 * are in n cells, then remove other candidates from those cells.
 	 */
-	private static final Eliminator CELL_ELIMINATOR = new Eliminator() {
-		boolean eliminateCells(Set<Character> symbols, Set<Cell> cells, List<Entry<Character, Collection<Cell>>> more) {
+	private static final Eliminator CELL_ELIMINATOR2 = new CliqueEliminator<Character, Cell>() {
+
+		@Override boolean eliminate(List<Entry<Character, Collection<Cell>>> links, Set<Character> symbols, Set<Cell> cells) {
 			boolean changed = false;
-			if (symbols.size() == cells.size()) {
-				for (Cell cell : cells)
-					changed |= cell.retainCandidates(symbols);
-			} else if (cells.size() < RECURSION_DEPTH) {
-				for (int i = 0; i < more.size(); i++) {
-					Entry<Character, Collection<Cell>> first = more.get(0);
-					List<Entry<Character, Collection<Cell>>> rest = more.subList(1, more.size());
-					changed |= eliminateCells(
-							Sets.union(symbols, Collections.singleton(first.getKey())),
-							Sets.union(cells, (Set<Cell>) first.getValue()),
-							rest);
-				}
-			}
+			for (Cell cell : cells)
+				changed |= cell.retainCandidates(symbols);
 			return changed;
 		}
 
-		@Override public boolean eliminate(Group group) {
-			boolean changed = false;
-			List<Entry<Character, Collection<Cell>>> cellList = group.cellsByCandidates();
-			for (int i = 0; i < cellList.size(); i++) {
-				Entry<Character, Collection<Cell>> first = cellList.get(i);
-				changed |= eliminateCells(
-						Collections.singleton(first.getKey()),
-						(Set<Cell>) first.getValue(),
-						cellList.subList(i+1, cellList.size()));
-			}
-			return changed;
+		@Override List<Entry<Character, Collection<Cell>>> getLinks(Group group) {
+			return group.cellsByCandidates();
 		}
 	};
 
@@ -277,6 +281,9 @@ public class Sudoku {
 		return true;
 	}
 
+	// Todo: Make this dynamic
+	private static final boolean REQUIRE_UNIQUE_SOLUTION = false;
+
 	boolean guess() {
 		for (int i = 0; i < cells.size(); i++) {
 			Cell cell = cells.get(i);
@@ -289,9 +296,9 @@ public class Sudoku {
 						// Eliminate the guessed symbol since it made the sudoku unsolvable.
 						cell.candidates.remove(symbol);
 						return true;
-					} else {
-						// Found a solution, so we could solve the cell here,
-						// if we don't care to detect duplicate solutions.
+					} else if (!REQUIRE_UNIQUE_SOLUTION) {
+						this.init(guess);
+						return true;
 					}
 				}
 			}
@@ -303,7 +310,7 @@ public class Sudoku {
 		while (!isDone()) {
 			// Call these repeatedly to eliminate candidates until 
 			// they don't have any effect.
-			while (eliminate(SYMBOL_ELIMINATOR) || eliminate(CELL_ELIMINATOR) || eliminate(ELIMINTATION_PROPAGATOR)) {
+			while (eliminate(SYMBOL_ELIMINATOR2) || eliminate(CELL_ELIMINATOR2) || eliminate(ELIMINTATION_PROPAGATOR)) {
 			}
 
 			if (!isDone() && !guess()) {
