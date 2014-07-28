@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Set;
 
 public class CubeTraverser {
-    private static String cubeToString(Cube c) {
+    static String cubeToString(Cube c) {
         return c.getCorners().toString() + c.getEdges().toString();
     }
 

@@ -17,6 +17,7 @@ public class RubiksTestSuite {
 		suite.addTestSuite(CubesTest.class);
 		suite.addTestSuite(OrientationsTest.class);
 		suite.addTestSuite(CubeTraverserTest.class);
+        suite.addTestSuite(CubeHeuristicTest.class);
 		return suite;
 	}
 }
