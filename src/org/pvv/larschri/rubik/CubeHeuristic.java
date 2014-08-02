@@ -85,6 +85,10 @@ public class CubeHeuristic {
         }
     }
 
+    /**
+     * Convert the given cube to a number that is low for organized cubes and
+     * higher for more chaotic cubes.
+     */
     static int calcHeuristic(Cube cube) {
         int[] analyze = PAIR_LOOKUP.analyze(cube);
         int[] counts = new int[7];
