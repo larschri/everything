@@ -32,7 +32,7 @@ public class CubeHeuristic {
                 }
             }
 
-            List<List<Cube>> results = CubeTraverser.traverse(Cubes.SOLVED, 6);
+            List<List<Cube>> results = CubeTraverser.traverse(Cubes.SOLVED, 5);
             for (int level = results.size() - 1; level >= 0; level--) {
                 for (Cube cube : results.get(level)) {
                     Cube inv = cube.inverse();

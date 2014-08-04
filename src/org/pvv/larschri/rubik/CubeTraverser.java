@@ -33,8 +33,8 @@ public class CubeTraverser {
         Set<String> visited = new HashSet<>();
         visited.add(cubeToString(cube));
         result.add(Collections.singletonList(cube));
-        for (int i = 1; i < levels; i++) {
-            result.add(visitLevel(visited, result.get(i - 1)));
+        for (int i = 0; i < levels; i++) {
+            result.add(visitLevel(visited, result.get(i)));
         }
         return result;
     }
