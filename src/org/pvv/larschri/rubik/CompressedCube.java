@@ -9,7 +9,7 @@ import junit.framework.TestCase;
 /**
  * Cube that does only store one facelet per cubelet. All facelets can be retrieved
  * from {@link #getCorners()} and {@link #getEdges()}.
- * 
+ *
  * <pre>
  *             6  5  5
  *             6  4  4
@@ -23,7 +23,7 @@ import junit.framework.TestCase;
  * </pre>
  * Corner cubelets:
  * 0, 1, 2, 3, 0, 5, 4, 1, 0, 3, 6, 5,
- * 2, 1, 4, 7, 6, 3, 2, 7, 4, 5, 6, 7 
+ * 2, 1, 4, 7, 6, 3, 2, 7, 4, 5, 6, 7
  * Corner rotations:
  * 0, 0, 0, 0, 1, 2, 1, 2, 2, 1, 2, 1,
  * 2, 1, 2, 1, 1, 2, 1, 2, 0, 0, 0, 0
@@ -33,13 +33,13 @@ import junit.framework.TestCase;
  * Possible corner rotations 3^7 =     2.187<br />
  * Possible edge positions 12! = 479.001.600<br />
  * Possible edge rotations 2^11 =      2.048<br />
- * Divide by two since two pieces cannot be swapped. It is however possible to swap two corners by 
+ * Divide by two since two pieces cannot be swapped. It is however possible to swap two corners by
  * also swapping two edges (http://en.wikipedia.org/wiki/Rubik%27s_Cube#Permutations) so they cannot
  * be handled independently.
  * <p />
  * This gives 43,252,003,274,489,856,000 different possible permutations. This number is less than
  * 2^66 (and greater than 2^65) so at least nine bytes (eight bytes and two bits) are required
- * to uniquely represent a cube. 
+ * to uniquely represent a cube.
  */
 public class CompressedCube implements ICube {
 
@@ -124,11 +124,13 @@ public class CompressedCube implements ICube {
 		}
 
 		/** In progress */
+		@SuppressWarnings("unused")
 		long compress(Facelet[] facelets) {
 			return 0;
 		}
 
 		/** In progress */
+		@SuppressWarnings("unused")
 		Facelet[] uncompress(long compressed) {
 			return null;
 		}
